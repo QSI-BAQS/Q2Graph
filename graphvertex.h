@@ -15,7 +15,7 @@ class GraphVertex : public QGraphicsEllipseItem
 {
 // group members by noun
 public:
-   GraphVertex(QRectF rect, QGraphicsItem * parent= nullptr);
+   GraphVertex(QGraphicsItem * parent= nullptr);
    // resolve compile error 'undefined reference to XXX vtable', see: https://
    // stackoverflow.com/questions/14010922/qt-undefined-reference-to-vtable
    ~GraphVertex();
@@ -29,6 +29,7 @@ public:
    //int type() const override {return Type;}
 
 protected:
+   //void keyPressEvent(QKeyEvent * event) override;
    //void contextMenuEvent(QGraphicsSceneContextMenuEvent * event) override;
 
 private:

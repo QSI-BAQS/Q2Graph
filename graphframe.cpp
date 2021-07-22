@@ -78,25 +78,18 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          label->hide();
       }
       else if(label->text() == "V"){
-         // record the 'click' POS
-         QPointF lbpPOS {event->scenePos()};
-         // QRectF reference point, bottom-right
-         QPointF br {lbpPOS.x()-20.0,lbpPOS.y()-20.0};
-         // QRectF reference point, top-left
-         QPointF tl {lbpPOS};
-
          // instantiate the vertex
          GraphVertex * v;
-         v= new GraphVertex(QRectF(tl,br));
+         v= new GraphVertex();
 
-         // fill colour: powder blue
+         // vertex fill: powder blue
          v->setBrush(QColor::fromRgb(176,224,230));
-         // boundary colour: black, 2 pt
+         // vertex perimeter colour: black, 2 pt
          v->setPen(QPen(Qt::black, 2));
 
          // GraphFrame acts as a container of Vertex objects
-         v->setPos(lbpPOS);
          addItem(v);
+         v->setPos(event->scenePos());
          //emit vertex_Insert(v);
 
          // reset CURSOR state
@@ -124,6 +117,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          cursorState(false);
          label->hide();
       }
+      QGraphicsScene::mousePressEvent(event);
    }
    /*
     * TO DO: menu on RIGHT-CLICK
