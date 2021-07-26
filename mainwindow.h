@@ -20,30 +20,10 @@ class MainWindow : public QMainWindow
 public:
    MainWindow(QWidget * parent = nullptr);
    ~MainWindow();
-/*
-private slots:
-   // mainwindow executes GraphFrame instructions
-   void changeColour_edge();
-   void changeColour_vertex();
 
-   void graphItem_Select(QGraphicsItem * item);
-   void graphItem_setToFront();
-   void graphItem_setToRear();
-
-   void vertex_Delete();
-   void vertex_Insert(GraphVertex * vertex);
-*/
 private:
-   Ui::MainWindow * ui;
-   GraphFrame * graphframe;
+   Ui::MainWindow * ui {};
+   GraphFrame * graphframe {};
 
-   //QAction * addAction;
-   //QAction * deleteAction;
-   //QAction * exitAction;
-   //QAction * toBack;
-   //QAction * toFront;
-
-   //QMenu * fileMenu;
-   //QMenu * graphItemMenu;
 };
 #endif // MAINWINDOW_H

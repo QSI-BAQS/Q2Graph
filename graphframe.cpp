@@ -55,19 +55,37 @@ void GraphFrame::keyPressEvent(QKeyEvent * event) {
 }
 
 void GraphFrame::mouseMoveEvent(QGraphicsSceneMouseEvent * event) {
+   // position the label at x,y coordinates, relative to cursor
    if(*p_cursorFT)
-      // move the label to x,y coordinates, relative to cursor
       label->move((event->screenPos().x())+15,(event->screenPos().y())+10);
+
+   // draw a dummy (graph)edge
+   if(tracer != nullptr && label->text() == "E"){
+      // grow the tracer line segment, following the mouse movement
+      QLineF growline(tracer->line().p1(), event->scenePos());
+      tracer->setLine(growline);
+   }
 }
 
 void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
    // LEFT CLICK events
    if(event->button() == Qt::LeftButton){
       if(label->text() == "E"){
-         /*functionality placeholder*/
+         // initialise a 'tracer' line segment; the actual (Graph)Edge will be
+         // set in arrears as a mouseReleaseEvent
+         tracer= new QGraphicsLineItem(
+                  QLineF(event->scenePos()
+                         ,event->scenePos()));
+         tracer->setPen(QPen(Qt::black,2));
+
+         // add tracer to 'this' GraphFrame (QGraphicsScene) container/
+         // collection
+         addItem(tracer);
 
          // reset CURSOR state
          cursorState(false);
+         // hide the label, "E" is required as a boolean proxy in subsequent
+         // QGraphicsSceneMouseEvent's
          label->hide();
       }
       else if(label->text() == "O"){
@@ -75,21 +93,30 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
          // reset CURSOR state
          cursorState(false);
-         label->hide();
+         label->clear();
       }
       else if(label->text() == "V"){
          // instantiate the vertex
          GraphVertex * v;
          v= new GraphVertex();
 
-         // vertex fill: powder blue
+         // colour of vertex fill: powder blue
          v->setBrush(QColor::fromRgb(176,224,230));
-         // vertex perimeter colour: black, 2 pt
+         // colour and font size of vertex circumference
          v->setPen(QPen(Qt::black, 2));
 
-         // GraphFrame acts as a container of Vertex objects
+         // add a QGraphicsItem (GraphVertex) to 'this' GraphFrame
+         // (QGraphicsScene) container/collection
          addItem(v);
-         v->setPos(event->scenePos());
+
+         // move rendered vertex from beneath the cursor
+         QPointF adjScenePos= QPointF(
+                  (event->scenePos().x()) - 10.0
+                  ,(event->scenePos().y()) - 20.0);
+         // TO DO: clear v->setrect() border; why are initial vertex inserts
+         // farther from the cursor than latter inserts?
+         // assign scene position (logical coordinates) to the vertex
+         v->setPos(adjScenePos);
          //emit vertex_Insert(v);
 
          // reset CURSOR state
@@ -101,21 +128,21 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
          // reset CURSOR state
          cursorState(false);
-         label->hide();
+         label->clear();
       }
       else if(label->text() == "Y"){
          /*functionality placeholder*/
 
          // reset CURSOR state
          cursorState(false);
-         label->hide();
+         label->clear();
       }
       else if(label->text() == "Z"){
          /*functionality placeholder*/
 
          // reset CURSOR state
          cursorState(false);
-         label->hide();
+         label->clear();
       }
       QGraphicsScene::mousePressEvent(event);
    }
@@ -123,8 +150,11 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
     * TO DO: menu on RIGHT-CLICK
    */
 }
-
-//void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {}
+/*
+void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+   // set the GraphEdge in arrears
+   //label->clear();
+}*/
 
 void GraphFrame::setCursorLabel(QString tag) {
    // create E/O/V/X/Y/Z label for cursor

@@ -2,7 +2,9 @@
 #define GRAPHVERTEX_H
 #pragma once
 
+#include <QDebug>
 #include <QGraphicsEllipseItem>
+#include <QGraphicsSceneMouseEvent>
 #include <QVector>
 
 class GraphEdge;
@@ -29,12 +31,13 @@ public:
    //int type() const override {return Type;}
 
 protected:
-   //void keyPressEvent(QKeyEvent * event) override;
    //void contextMenuEvent(QGraphicsSceneContextMenuEvent * event) override;
+   //void keyPressEvent(QKeyEvent * event) override;
+   void mousePressEvent(QGraphicsSceneMouseEvent * event) override;
 
 private:
    QVector<GraphEdge *> edges;
-   QMenu * vertexMenu;
+   QMenu * vertexmenu {};
 };
 
 #endif // GRAPHVERTEX_H

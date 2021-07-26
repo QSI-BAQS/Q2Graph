@@ -2,7 +2,9 @@
 #define GRAPHEDGE_H
 #pragma once
 
+#include <QDebug>
 #include <QGraphicsLineItem>
+#include <QPen>
 
 class GraphVertex;  // for GraphEdge constructor
 
@@ -10,8 +12,21 @@ class GraphEdge : public QGraphicsLineItem
 {
 // group members by noun
 public:
-   GraphEdge();
-   //~GraphEdge();
+   GraphEdge(GraphVertex * p1V, GraphVertex * p2V
+             , QGraphicsItem * parent= nullptr);
+   ~GraphEdge();
+
+   GraphVertex * p1v() const { return p1vertex; }
+   GraphVertex * p2v() const { return p2vertex; }
+
+   void resetColour(const QColor & colour) {
+      edgecolour= QPen(colour,2);
+   }
+
+private:
+   QPen edgecolour {Qt::black,2};
+   GraphVertex * p1vertex {};
+   GraphVertex * p2vertex {};
 };
 
 #endif // GRAPHEDGE_H

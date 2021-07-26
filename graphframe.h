@@ -2,8 +2,10 @@
 #define GRAPHFRAME_H
 #pragma once
 
+#include "graphedge.h"
 #include "graphvertex.h"
 
+#include <QDebug>
 #include <QGraphicsScene>
 #include <QLabel>
 #include <QPointF>
@@ -11,6 +13,7 @@
 QT_BEGIN_NAMESPACE
 class QColor;
 class QGraphicsEllipseItem;
+class QGraphicsItem;
 class QGraphicsLineItem;
 //class QMenu;
 QT_END_NAMESPACE
@@ -23,18 +26,6 @@ class GraphFrame : public QGraphicsScene
 public:
    explicit GraphFrame(QWidget * parent = nullptr);
    ~GraphFrame();
-/*
-signals:
-   void changeColour_edge();
-   void changeColour_vertex();
-
-   //QGraphicsItem, base class to QAbstractGraphicsShapeItem, QGraphicsLineItem
-   void graphItem_Select(QGraphicsItem * item);
-   void graphItem_setToFront();
-   void graphItem_setToRear();
-
-   void vertex_Delete();
-   void vertex_Insert(GraphVertex * vertex);*/
 
 protected:
    void keyPressEvent(QKeyEvent * event) override;
@@ -44,10 +35,9 @@ protected:
 
 private:
    bool ft[2] {false,true};
-   QLabel * label;
-   //QPointF * p_lastpos;
+   QLabel * label {};
+   QGraphicsLineItem * tracer {};
    const bool * p_cursorFT {&ft[0]};
-   QRectF vertexBoundary;
 
    void cursorState(bool setTF);
    void setCursorLabel(QString tag);
