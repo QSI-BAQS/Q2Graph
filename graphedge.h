@@ -16,12 +16,20 @@ public:
              , QGraphicsItem * parent= nullptr);
    ~GraphEdge();
 
+   // as with GraphVertex: to establish instance ID
+   enum { Type= UserType + 4 };
+
+
    GraphVertex * p1v() const { return p1vertex; }
    GraphVertex * p2v() const { return p2vertex; }
 
    void resetColour(const QColor & colour) {
       edgecolour= QPen(colour,2);
    }
+
+   void setEdgePosition();
+
+   int type() const override { return Type; }
 
 private:
    QPen edgecolour {Qt::black,2};

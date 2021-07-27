@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
    ui->graphicsView->setScene(graphframe);
 
    ui->graphicsView->setMouseTracking(true);
-   setWindowTitle("Graph 3.0_gvf");
+   setWindowTitle("q2graph_GVF_v0.3");
 
 }
 

@@ -22,13 +22,10 @@ public:
    // stackoverflow.com/questions/14010922/qt-undefined-reference-to-vtable
    ~GraphVertex();
 
-   //enum {Type = UserType + 15};
+   // for establishing instance ID
+   enum {Type= UserType + 15};
 
-   void addEdge(GraphEdge * edge);
-   void deleteEdge(GraphEdge * edge);
-   void removeEdges();
-
-   //int type() const override {return Type;}
+   int type() const override { return Type; }
 
 protected:
    //void contextMenuEvent(QGraphicsSceneContextMenuEvent * event) override;
