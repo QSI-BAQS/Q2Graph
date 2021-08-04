@@ -3,17 +3,34 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
 
+#include <algorithm>
+
 
 GraphFrame::GraphFrame(QWidget *parent)
    : QGraphicsScene(parent)
 {
-   label= new QLabel;
-   label->setWindowFlag(Qt::ToolTip);
+   clabel= new QLabel;
+   clabel->setWindowFlag(Qt::ToolTip);
 }
 
 GraphFrame::~GraphFrame()
 {
-   delete label;
+   delete clabel;
+}
+
+QList<QGraphicsItem *> GraphFrame::collectVertices() {
+   // reduce items() to vertices held by the GraphFrame
+   // pre-condition: GraphFrame holds at least one (1) vertex
+   // post-condition: a List of vertices held by the GraphFrame
+   QList<QGraphicsItem *> allitems= items();
+   QList<QGraphicsItem *> allvs {};
+
+   std::copy_if(allitems.begin()
+                , allitems.end()
+                , std::back_inserter(allvs)
+                , [](const GraphVertex & v){ return v.type() == GraphVertex::Type; });
+
+   return allvs;
 }
 
 void GraphFrame::cursorState(bool setTF) {
@@ -56,11 +73,13 @@ void GraphFrame::keyPressEvent(QKeyEvent * event) {
 
 void GraphFrame::mouseMoveEvent(QGraphicsSceneMouseEvent * event) {
    // position the label at x,y coordinates, relative to cursor
-   if(*p_cursorFT)
-      label->move((event->screenPos().x())+15,(event->screenPos().y())+10);
+   if(*p_cursorFT){
+      clabel->move((event->screenPos().x())+15,(event->screenPos().y())+10);
+      //clabel->setAttribute(Qt::WA_TranslucentBackground);
+   }
 
    // draw the dummy (graph)edge instantiated through mousePressEvent
-   if(tracer != nullptr && label->text() == "E"){
+   if(tracer != nullptr && clabel->text() == "E"){
       // grow the tracer line segment, following the mouse movement
       QLineF growline(tracer->line().p1(), event->scenePos());
       tracer->setLine(growline);
@@ -70,7 +89,7 @@ void GraphFrame::mouseMoveEvent(QGraphicsSceneMouseEvent * event) {
 void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
    // LEFT CLICK events
    if(event->button() == Qt::LeftButton){
-      if(label->text() == "E"){
+      if(clabel->text() == "E"){
          // initialise a 'tracer' line segment; the actual (Graph)Edge will be
          // set in arrears as a mouseReleaseEvent
          tracer= new QGraphicsLineItem(
@@ -78,33 +97,34 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
                          ,event->scenePos()));
          tracer->setPen(QPen(Qt::black,2));
 
-         // add tracer to 'this' GraphFrame (QGraphicsScene) container/
+         // add tracer to the GraphFrame (QGraphicsScene) container/
          addItem(tracer);
 
          // reset CURSOR state
          cursorState(false);
          // hide the label: "E" is required as a boolean proxy in subsequent
          // QGraphicsSceneMouseEvent's
-         label->hide();
+         clabel->hide();
       }
-      else if(label->text() == "O"){
+      else if(clabel->text() == "O"){
          /*functionality placeholder*/
 
          // reset CURSOR state
          cursorState(false);
-         label->clear();
+         clabel->clear();
       }
-      else if(label->text() == "V"){
+      else if(clabel->text() == "V"){
          // instantiate the vertex
          GraphVertex * v;
          v= new GraphVertex();
 
-         // colour of vertex fill: powder blue
-         v->setBrush(QColor::fromRgb(176,224,230));
-         // colour and font size of vertex circumference
-         v->setPen(QPen(Qt::black, 2));
+         // set vertex label (REVISIT: with delete operation)
+         /* all vertices have the same .type(), which means .indexOf() is
+          * ineffective
+         */
+         v->setVertexID(collectVertices().count());
 
-         // add a QGraphicsItem (GraphVertex) to 'this' GraphFrame
+         // add a QGraphicsItem (GraphVertex) to the GraphFrame
          // (QGraphicsScene) container
          addItem(v);
 
@@ -116,84 +136,82 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          // farther from the cursor than latter inserts?
          // assign scene position (logical coordinates) to the vertex
          v->setPos(adjScenePos);
-         //emit vertex_Insert(v);
 
          // reset CURSOR state
          cursorState(false);
-         label->clear();
+         clabel->clear();
       }
-      else if(label->text() == "X"){
+      else if(clabel->text() == "X"){
          /*functionality placeholder*/
 
          // reset CURSOR state
          cursorState(false);
-         label->clear();
+         clabel->clear();
       }
-      else if(label->text() == "Y"){
+      else if(clabel->text() == "Y"){
          /*functionality placeholder*/
 
          // reset CURSOR state
          cursorState(false);
-         label->clear();
+         clabel->clear();
       }
-      else if(label->text() == "Z"){
+      else if(clabel->text() == "Z"){
          /*functionality placeholder*/
 
          // reset CURSOR state
          cursorState(false);
-         label->clear();
+         clabel->clear();
       }
       QGraphicsScene::mousePressEvent(event);
    }
-   /*
-    * TO DO: menu on RIGHT-CLICK
-   */
+    // TO DO: menu on RIGHT-CLICK?
 }
 
 void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) {
-   if(tracer != nullptr && label->text() == "E"){
+   if(tracer != nullptr && clabel->text() == "E"){
       // staging area for the vertex identified at p1 coordinates
-      QList<QGraphicsItem *> p1Items= items(tracer->line().p1());
-      // if the first object of p1Items is a tracer, remove it
-      if(p1Items.count() && p1Items.first() == tracer)
-         p1Items.removeFirst();
+      QList<QGraphicsItem *> p1items= items(tracer->line().p1());
+      // if the first item of p1items is a tracer instance, remove it
+      if(p1items.count() && p1items.first() == tracer)
+         p1items.removeFirst();
 
       //  staging area for the vertex identified at p2 coordinates
-      QList<QGraphicsItem *> p2Items= items(tracer->line().p2());
-      // as with p1Items: if the first object of p2Items is a tracer, remove it
-      if(p2Items.count() && p2Items.first() == tracer)
-         p2Items.removeFirst();
+      QList<QGraphicsItem *> p2items= items(tracer->line().p2());
+      // as with p1items: if the first item of p2items is a tracer instance,
+      // remove it
+      if(p2items.count() && p2items.first() == tracer)
+         p2items.removeFirst();
 
       // having now selected vertices p1 and p2 to pass as constructors to
-      // GraphEdge, back out the variable tracer from 'this' GraphFrame
+      // GraphEdge, back out the variable tracer from the GraphFrame
       // (QGraphicsScene) container...
       removeItem(tracer);
       // then, release the memory
       delete tracer;
 
-      if(p1Items.count() > 0 && p2Items.count() > 0
-            && p1Items.first()->type() == GraphVertex::Type   // match IDs
-            && p2Items.first()->type() == GraphVertex::Type   // match IDs
-            && p1Items.first() != p2Items.first()){
+      if(p1items.count() > 0 && p2items.count() > 0
+            && p1items.first()->type() == GraphVertex::Type   // match IDs
+            && p2items.first()->type() == GraphVertex::Type   // match IDs
+            && p1items.first() != p2items.first()){
          // create a pointer to the (Graph)vertex designated as p1
-         GraphVertex * p1V= qgraphicsitem_cast<GraphVertex *>(p1Items.first());
+         GraphVertex * p1v= qgraphicsitem_cast<GraphVertex *>(p1items.first());
          // create a pointer to the (Graph)vertex designated as p2
-         GraphVertex * p2V= qgraphicsitem_cast<GraphVertex *>(p2Items.first());
-         // use p1V and p2V as constructors to instantiate the edge
-         GraphEdge * e= new GraphEdge(p1V, p2V);
+         GraphVertex * p2v= qgraphicsitem_cast<GraphVertex *>(p2items.first());
+         // use p1v and p2v as constructors to instantiate the edge
+         GraphEdge * e= new GraphEdge(p1v, p2v);
 
          // set the edge behind the p1 and p2 vertices
-         e->setZValue(-1000.0);
+         e->setZValue(-999.0);
 
-         // add a QGraphicsLineItem (GraphEdge) to 'this' GraphFrame
+         // add a QGraphicsLineItem (GraphEdge) to the GraphFrame
          // (QGraphicsScene) container
          addItem(e);
          // assign scene position (logical coordinates) to the edge
          e->setEdgePosition();
 
          // at last, clear the "E" label
-         if(label->text() == "E")
-            label->clear();
+         if(clabel->text() == "E")
+            clabel->clear();
       }
    }
    tracer= nullptr;
@@ -206,11 +224,12 @@ void GraphFrame::setCursorLabel(QString tag) {
    // post-condition: a visible, persistent label for the cursor
 
    // label appears at (x,y coordinates), relative to cursor
-   label->move(QCursor::pos().x()+15, QCursor::pos().y()+10);
+   clabel->move(QCursor::pos().x()+15, QCursor::pos().y()+10);
 
    // layout
-   label->setText(tag);
+   clabel->setText(tag);
 
-   if(label->isHidden())
-      label->show();
+   if(clabel->isHidden())
+      clabel->show();
 };
+

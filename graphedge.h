@@ -12,7 +12,7 @@ class GraphEdge : public QGraphicsLineItem
 {
 // group members by noun
 public:
-   GraphEdge(GraphVertex * p1V, GraphVertex * p2V
+   GraphEdge(GraphVertex * p1v, GraphVertex * p2v
              , QGraphicsItem * parent= nullptr);
    ~GraphEdge();
 

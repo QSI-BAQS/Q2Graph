@@ -35,13 +35,14 @@ protected:
 
 private:
    bool ft[2] {false,true};
-   QLabel * label {};
+   QLabel * clabel {};
    QGraphicsLineItem * tracer {};
    const bool * p_cursorFT {&ft[0]};
 
    void cursorState(bool setTF);
    void setCursorLabel(QString tag);
 
+   QList<QGraphicsItem *> collectVertices();
 };
 
 #endif // GRAPHFRAME_H

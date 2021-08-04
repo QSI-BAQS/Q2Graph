@@ -1,9 +1,9 @@
 #include "graphedge.h"
 #include "graphvertex.h"
 
-GraphEdge::GraphEdge(GraphVertex * p1V, GraphVertex * p2V
+GraphEdge::GraphEdge(GraphVertex * p1v, GraphVertex * p2v
                      , QGraphicsItem * parent)
-   : QGraphicsLineItem (parent), p1vertex(p1V), p2vertex(p2V)
+   : QGraphicsLineItem (parent), p1vertex(p1v), p2vertex(p2v)
 {
    setFlag(QGraphicsItem::ItemIsSelectable);
    setPen(edgecolour);
