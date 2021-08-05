@@ -84,6 +84,7 @@ void GraphFrame::mouseMoveEvent(QGraphicsSceneMouseEvent * event) {
       QLineF growline(tracer->line().p1(), event->scenePos());
       tracer->setLine(growline);
    }
+   QGraphicsScene::mouseMoveEvent(event);
 }
 
 void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
@@ -164,7 +165,10 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
       }
       QGraphicsScene::mousePressEvent(event);
    }
-    // TO DO: menu on RIGHT-CLICK?
+
+   if(event->button() == Qt::RightButton)
+      // TO DO: menu on RIGHT-CLICK?
+      event->ignore();
 }
 
 void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) {

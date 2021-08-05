@@ -22,7 +22,6 @@ class GraphFrame : public QGraphicsScene
 {
    Q_OBJECT
 
-// group members by noun
 public:
    explicit GraphFrame(QWidget * parent = nullptr);
    ~GraphFrame();

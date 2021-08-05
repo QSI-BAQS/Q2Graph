@@ -4,12 +4,12 @@
 
 #include <QDebug>
 
-#include <QBrush>
-#include <QFont>
 #include <QGraphicsEllipseItem>
 #include <QGraphicsSceneMouseEvent>
-#include <QGraphicsSimpleTextItem>
-#include <QPen>
+#include <QPainter>
+#include <QVector>
+
+class GraphEdge;
 /*
 QT_BEGIN_NAMESPACE
 class QMenu;
@@ -17,7 +17,6 @@ QT_END_NAMESPACE
 */
 class GraphVertex : public QGraphicsEllipseItem
 {
-// group members by noun
 public:
    GraphVertex(QGraphicsItem * parent= nullptr);
    // resolve compile error 'undefined reference to XXX vtable', see: https://
@@ -27,22 +26,33 @@ public:
    // for establishing instance ID
    enum {Type= UserType + 15};
 
-   void setVertexID(int vscount);
-
+   // required by QGraphicsView?
+   QRectF boundingRect() const override { return vertexboundaryrect; };
    int type() const override { return Type; }
+
+   void addEdge(GraphEdge * edge);
+   //void removeEdge(GraphEdge * edge);
+   //void removeEdges();
+
+   void setVertexID(int vscount);
 
 protected:
    //void contextMenuEvent(QGraphicsSceneContextMenuEvent * event) override;
-   void mousePressEvent(QGraphicsSceneMouseEvent * event) override;
+   QVariant itemChange(GraphicsItemChange change
+                       , const QVariant & value) override;
+   void paint(QPainter * painter, const QStyleOptionGraphicsItem * option
+              , QWidget * widget) override;
 
 private:
+   QVector<GraphEdge *> edges;
+
    QRectF vertexboundaryrect {QPointF(0.0,0.0), QSizeF(20.0,20.0)};
    QPen vertexcircumferencepen {Qt::black, 2};
    QBrush vertexfill {QColor::fromRgb(245,245,245)};   // white smoke
 
-   QGraphicsSimpleTextItem * vertexid {};
-   QBrush vertexidbrush {Qt::darkBlue};
+   int vertexid {};
    QFont vertexidfont {"SansSerif", 8, QFont::Normal};
+   QPen vertexidpen {Qt::darkBlue, 1};
    //QMenu * vertexmenu {};
 };
 

@@ -11,6 +11,7 @@ GraphEdge::GraphEdge(GraphVertex * p1v, GraphVertex * p2v
 
 GraphEdge::~GraphEdge() {};
 
+// reset as paint override?
 void GraphEdge::setEdgePosition() {
    QLineF edge(mapFromItem(p1vertex,10,10)
                ,mapFromItem(p2vertex,10,10));

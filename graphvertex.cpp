@@ -1,4 +1,5 @@
 #include "graphvertex.h"
+#include "graphedge.h"
 
 
 GraphVertex::GraphVertex(QGraphicsItem * parent)
@@ -10,7 +11,7 @@ GraphVertex::GraphVertex(QGraphicsItem * parent)
    setPen(vertexcircumferencepen);
 
    // enable labelling of GraphVertex representation
-   vertexid= new QGraphicsSimpleTextItem(this);
+   //vertexid= new QGraphicsSimpleTextItem(this);
 
    // properties of the vertex
    setFlag(QGraphicsItem::ItemIsMovable);
@@ -19,35 +20,41 @@ GraphVertex::GraphVertex(QGraphicsItem * parent)
 
 }
 
-GraphVertex::~GraphVertex() {
-   delete vertexid;
-}
+GraphVertex::~GraphVertex() {}
 
-void GraphVertex::mousePressEvent(QGraphicsSceneMouseEvent * event) {
-   if(event->button() == Qt::LeftButton){
-      if(event->modifiers() == Qt::ControlModifier){
-         //qDebug() << "Custom item clicked with Ctrl-key";
-         setSelected(true);
-      }
-   }
-   QGraphicsItem::mousePressEvent(event);
-}
+void GraphVertex::addEdge(GraphEdge * edge) {
+   qDebug() << "edge added:" << edge;
+   edges.push_back(edge);
+};
+/*
+void GraphVertex::removeEdge(GraphEdge * edge) {
+   edges.removeAll(edge);
+};*/
 
 void GraphVertex::setVertexID(int vscount) {
    //qDebug() << "vscount + 1 =" << vscount + 1;
-   // position and centre the id text
-   int vid {vscount + 1};
-   if(vid < 10)
-      vertexid->setPos(QPointF(vertexboundaryrect.x() + 6.5
-                               , vertexboundaryrect.y()+ 3.0));
-   else if(vid > 9 && vid < 100)
-      vertexid->setPos(QPointF(vertexboundaryrect.x() + 3.5
-                               , vertexboundaryrect.y() + 3.0));
-   else
-      vertexid->setPos(QPointF(vertexboundaryrect.x() + 1.0
-                               , vertexboundaryrect.y() + 3.0));
-
-   vertexid->setBrush(vertexidbrush);
-   vertexid->setFont(vertexidfont);
-   vertexid->setText(QString::number(vscount + 1));
+   vertexid= vscount + 1;
 }
+
+QVariant GraphVertex::itemChange(GraphicsItemChange change, const QVariant & value) {
+   if(change == QGraphicsItem::ItemPositionChange) {
+      for(GraphEdge * edge : qAsConst(edges))
+         edge->setEdgePosition();
+   }
+
+   return value;
+};
+
+void GraphVertex::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget) {
+   Q_UNUSED(option);
+   Q_UNUSED(widget);
+
+   // call paint to render (constructor) standard vertex
+   QGraphicsEllipseItem::paint(painter,option,widget);
+
+   // font, pen and alignment of vertex id
+   painter->setFont(vertexidfont);
+   painter->setPen(vertexidpen);
+   painter->drawText(boundingRect(), Qt::AlignCenter, QString::number(vertexid));
+}
+

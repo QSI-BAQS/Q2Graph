@@ -10,7 +10,6 @@ class GraphVertex;  // for GraphEdge constructor
 
 class GraphEdge : public QGraphicsLineItem
 {
-// group members by noun
 public:
    GraphEdge(GraphVertex * p1v, GraphVertex * p2v
              , QGraphicsItem * parent= nullptr);
@@ -18,7 +17,6 @@ public:
 
    // as with GraphVertex: to establish instance ID
    enum { Type= UserType + 4 };
-
 
    GraphVertex * p1v() const { return p1vertex; }
    GraphVertex * p2v() const { return p2vertex; }
