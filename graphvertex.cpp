@@ -2,6 +2,7 @@
 #include "graphedge.h"
 
 
+// public:
 GraphVertex::GraphVertex(QGraphicsItem * parent)
    : QGraphicsEllipseItem(parent)
 {
@@ -9,9 +10,6 @@ GraphVertex::GraphVertex(QGraphicsItem * parent)
    setRect(vertexboundaryrect);
    setBrush(vertexfill);
    setPen(vertexcircumferencepen);
-
-   // enable labelling of GraphVertex representation
-   //vertexid= new QGraphicsSimpleTextItem(this);
 
    // properties of the vertex
    setFlag(QGraphicsItem::ItemIsMovable);
@@ -22,24 +20,32 @@ GraphVertex::GraphVertex(QGraphicsItem * parent)
 
 GraphVertex::~GraphVertex() {}
 
+
 void GraphVertex::addEdge(GraphEdge * edge) {
-   qDebug() << "edge added:" << edge;
+   //qDebug() << "edge added:" << edge << "type():" << edge->type();
    edges.push_back(edge);
 };
 /*
 void GraphVertex::removeEdge(GraphEdge * edge) {
    edges.removeAll(edge);
-};*/
+};
+*/
+void GraphVertex::resetColour(const QColor & colour) {
+   vertexcircumferencepen= QPen(colour,2);
+   //edges.at(X)->resetColour(colour); ???
+   update();
+}
 
 void GraphVertex::setVertexID(int vscount) {
    //qDebug() << "vscount + 1 =" << vscount + 1;
    vertexid= vscount + 1;
 }
 
+// protected:
 QVariant GraphVertex::itemChange(GraphicsItemChange change, const QVariant & value) {
    if(change == QGraphicsItem::ItemPositionChange) {
       for(GraphEdge * edge : qAsConst(edges))
-         edge->setEdgePosition();
+         edge->resetEdgePosition();
    }
 
    return value;

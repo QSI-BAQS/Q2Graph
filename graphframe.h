@@ -41,7 +41,7 @@ private:
    void cursorState(bool setTF);
    void setCursorLabel(QString tag);
 
-   QList<QGraphicsItem *> collectVertices();
+   QList<GraphVertex *> collectVertices();
 };
 
 #endif // GRAPHFRAME_H

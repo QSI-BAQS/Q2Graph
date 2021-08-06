@@ -6,6 +6,7 @@
 #include <algorithm>
 
 
+// public:
 GraphFrame::GraphFrame(QWidget *parent)
    : QGraphicsScene(parent)
 {
@@ -18,32 +19,7 @@ GraphFrame::~GraphFrame()
    delete clabel;
 }
 
-QList<QGraphicsItem *> GraphFrame::collectVertices() {
-   // reduce items() to vertices held by the GraphFrame
-   // pre-condition: GraphFrame holds at least one (1) vertex
-   // post-condition: a List of vertices held by the GraphFrame
-   QList<QGraphicsItem *> allitems= items();
-   QList<QGraphicsItem *> allvs {};
-
-   std::copy_if(allitems.begin()
-                , allitems.end()
-                , std::back_inserter(allvs)
-                , [](const GraphVertex & v){ return v.type() == GraphVertex::Type; });
-
-   return allvs;
-}
-
-void GraphFrame::cursorState(bool setTF) {
-   // 'setter' function
-   // pre-condition: setTF == true | false
-   // post-condition: datum: cursor, set as true or false
-   if(setTF == false)
-      p_cursorFT= &ft[0];
-
-   else if(setTF == true)
-      p_cursorFT= &ft[1];
-}
-
+// protected:
 void GraphFrame::keyPressEvent(QKeyEvent * event) {
    if(event->key() == Qt::Key_E){
       setCursorLabel("E");
@@ -77,7 +53,6 @@ void GraphFrame::mouseMoveEvent(QGraphicsSceneMouseEvent * event) {
       clabel->move((event->screenPos().x())+15,(event->screenPos().y())+10);
       //clabel->setAttribute(Qt::WA_TranslucentBackground);
    }
-
    // draw the dummy (graph)edge instantiated through mousePressEvent
    if(tracer != nullptr && clabel->text() == "E"){
       // grow the tracer line segment, following the mouse movement
@@ -91,7 +66,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
    // LEFT CLICK events
    if(event->button() == Qt::LeftButton){
       if(clabel->text() == "E"){
-         // initialise a 'tracer' line segment; the actual (Graph)Edge will be
+         // initialise a 'tracer' line segment; the actual (Graph)edge will be
          // set in arrears as a mouseReleaseEvent
          tracer= new QGraphicsLineItem(
                   QLineF(event->scenePos()
@@ -127,6 +102,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
          // add a QGraphicsItem (GraphVertex) to the GraphFrame
          // (QGraphicsScene) container
+         qDebug() << "vertex added:" << v << "type():" << v->type();
          addItem(v);
 
          // move rendered vertex from beneath the cursor
@@ -194,8 +170,10 @@ void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) {
       delete tracer;
 
       if(p1items.count() > 0 && p2items.count() > 0
-            && p1items.first()->type() == GraphVertex::Type   // match IDs
-            && p2items.first()->type() == GraphVertex::Type   // match IDs
+            /* 'All standard graphicsitem classes are associated with a unique
+               value' */
+            && p1items.first()->type() == GraphVertex::Type
+            && p2items.first()->type() == GraphVertex::Type
             && p1items.first() != p2items.first()){
          // create a pointer to the (Graph)vertex designated as p1
          GraphVertex * p1v= qgraphicsitem_cast<GraphVertex *>(p1items.first());
@@ -204,14 +182,14 @@ void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) {
          // use p1v and p2v as constructors to instantiate the edge
          GraphEdge * e= new GraphEdge(p1v, p2v);
 
-         // set the edge behind the p1 and p2 vertices
-         e->setZValue(-999.0);
+         // add the edge to (QVector) 'edges' of vertices p1 and p2
+         p1v->addEdge(e);
+         p2v->addEdge(e);
 
          // add a QGraphicsLineItem (GraphEdge) to the GraphFrame
          // (QGraphicsScene) container
+         qDebug() << "edge added:" << e << "type():" << e->type();
          addItem(e);
-         // assign scene position (logical coordinates) to the edge
-         e->setEdgePosition();
 
          // at last, clear the "E" label
          if(clabel->text() == "E")
@@ -222,18 +200,49 @@ void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) {
    QGraphicsScene::mouseReleaseEvent(event);
 }
 
+// private:
+void GraphFrame::cursorState(bool setTF) {
+   // 'setter' function
+   // pre-condition: setTF == true | false
+   // post-condition: datum: cursor, set as true or false
+   if(setTF == false)
+      p_cursorFT= &ft[0];
+
+   else if(setTF == true)
+      p_cursorFT= &ft[1];
+}
+
 void GraphFrame::setCursorLabel(QString tag) {
    // create E/O/V/X/Y/Z label for cursor
    // pre-condition: tag is type QString
    // post-condition: a visible, persistent label for the cursor
 
    // label appears at (x,y coordinates), relative to cursor
-   clabel->move(QCursor::pos().x()+15, QCursor::pos().y()+10);
+   clabel->move(QCursor::pos().x() + 15
+                , QCursor::pos().y() + 10);
 
    // layout
    clabel->setText(tag);
 
+   // reveal a hidden cursor
    if(clabel->isHidden())
       clabel->show();
 };
 
+QList<GraphVertex *> GraphFrame::collectVertices(){
+   // source
+   QList<QGraphicsItem *> allitems= items();
+   // target
+   QList<GraphVertex *> allvs {};
+
+   // using its virtual int Type as an identifier, cast any QGraphicsItem as a
+   // GraphVertex then collect it
+   for (QGraphicsItem * i : allitems) {
+      if(i->type() == 65551){
+         GraphVertex * iisv= qgraphicsitem_cast<GraphVertex *>(i);
+         allvs.push_back(iisv);
+      }
+   }
+
+   return allvs;
+}

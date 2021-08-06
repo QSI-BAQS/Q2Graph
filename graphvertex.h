@@ -34,6 +34,7 @@ public:
    //void removeEdge(GraphEdge * edge);
    //void removeEdges();
 
+   void resetColour(const QColor & colour);
    void setVertexID(int vscount);
 
 protected:
@@ -41,7 +42,7 @@ protected:
    QVariant itemChange(GraphicsItemChange change
                        , const QVariant & value) override;
    void paint(QPainter * painter, const QStyleOptionGraphicsItem * option
-              , QWidget * widget) override;
+              , QWidget * widget= nullptr) override;
 
 private:
    QVector<GraphEdge *> edges;
