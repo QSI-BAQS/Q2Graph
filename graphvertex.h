@@ -35,7 +35,7 @@ public:
    //void removeEdges();
 
    void resetColour(const QColor & colour);
-   void setVertexID(int vscount);
+   void setVertexID(unsigned int vscount);
 
 protected:
    //void contextMenuEvent(QGraphicsSceneContextMenuEvent * event) override;
@@ -51,7 +51,7 @@ private:
    QPen vertexcircumferencepen {Qt::black, 2};
    QBrush vertexfill {QColor::fromRgb(245,245,245)};   // white smoke
 
-   int vertexid {};
+   unsigned int vertexid {};
    QFont vertexidfont {"SansSerif", 8, QFont::Normal};
    QPen vertexidpen {Qt::darkBlue, 1};
    //QMenu * vertexmenu {};

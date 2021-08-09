@@ -3,6 +3,7 @@
 
 #include "graphvertex.h"
 
+#include <QLabel>
 #include <QMainWindow>
 
 class GraphFrame;
@@ -20,6 +21,8 @@ class MainWindow : public QMainWindow
 public:
    MainWindow(QWidget * parent = nullptr);
    ~MainWindow();
+
+   //QLabel * clabel {};
 
 private:
    Ui::MainWindow * ui {};
