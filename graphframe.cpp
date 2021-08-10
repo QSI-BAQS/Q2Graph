@@ -53,7 +53,7 @@ void GraphFrame::mouseMoveEvent(QGraphicsSceneMouseEvent * event) {
       clabel->move((event->screenPos().x()) + 15
                    ,(event->screenPos().y()) + 10);
 
-   // draw the dummy (graph)edge instantiated through mousePressEvent
+   // draw the dummy (Graph)edge instantiated through mousePressEvent
    if(tracer != nullptr && clabel->text() == "E"){
       // grow the tracer line segment, following the mouse movement
       QLineF growline(tracer->line().p1(), event->scenePos());
@@ -65,45 +65,45 @@ void GraphFrame::mouseMoveEvent(QGraphicsSceneMouseEvent * event) {
 void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
    // LEFT CLICK events
    if(event->button() == Qt::LeftButton){
+      // initiate a (Graph)edge
       if(clabel->text() == "E"){
-         // collect the item under the cursor hotspot 'at click'
-         QList<QGraphicsItem *> localvs= items(event->scenePos());
-         // clear out any edges that may also be in localvs
-         if(localvs.count() && localvs.first()->type() != GraphVertex::Type)
-            localvs.removeFirst();
-
-         // establish whether the intended p1 vertex is referenced by localvs,
-         // if TRUE:
-         if(localvs.first()->type() == GraphVertex::Type){
-            // prevent any subsequent mouse move that is intended to draw the
-            // edge from bringing along the vertex too
-            localvs.first()->setFlag(QGraphicsItem::ItemIsMovable, false);
-
-            // initialise a 'tracer' line segment; the actual (Graph)edge will be
-            // set in arrears as a mouseReleaseEvent
-            tracer= new QGraphicsLineItem(
-                     QLineF(event->scenePos()
-                            , event->scenePos()));
-            tracer->setPen(QPen(Qt::black,2));
-
-            // add tracer to the GraphFrame (QGraphicsScene) container
-            addItem(tracer);
-
-            // reset CURSOR state
-            cursorState(false);
-            // hide the label: "E" is required as a boolean proxy in subsequent
-            // QGraphicsSceneMouseEvent's
-            clabel->hide();
-         }
-
-         // or, if FALSE:
-         else if(localvs.isEmpty()) {
-            // TO DO: work out an exception for this outcome
-//qDebug() << "not on a vertex, try again";
+         // prevent a runtime exception caused by nothing being at the cursor
+         // hotspot, 'upon click'
+         if(items(event->scenePos()).isEmpty()){
+//qDebug() << "nothing at the hotspot, try again";
+            // clear 'E' status and drop the cursor label
             cursorState(false);
             clabel->clear();
+            return ;
          }
+         // collect the p1 vertex at the cursor hotspot, 'upon click'
+         QList<QGraphicsItem *> localvs= items(event->scenePos());
+
+         // remove any first element of localvs, which is not a vertex
+         if(localvs.first()->type() != GraphVertex::Type)
+            localvs.removeFirst();
+         else
+            // prevent the subsequent mouseMoveEvent, which is meant solely to
+            // draw an edge, from bringing the vertex along with it
+            localvs.first()->setFlag(QGraphicsItem::ItemIsMovable, false);
+
+         // initialise a 'tracer' line segment; the actual edge will
+         // be set in arrears at the subsequent mouseReleaseEvent
+         tracer= new QGraphicsLineItem(
+                  QLineF(event->scenePos()
+                         , event->scenePos()));
+         tracer->setPen(QPen(Qt::black,2));
+
+         // add tracer to the GraphFrame (QGraphicsScene) container
+         addItem(tracer);
+
+         // reset CURSOR state
+         cursorState(false);
+         // hide the label: "E" is required as a boolean proxy in subsequent
+         // QGraphicsSceneMouseEvent's
+         clabel->hide();
       }
+      // do an O something
       else if(clabel->text() == "O"){
          /*functionality placeholder*/
 
@@ -111,6 +111,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          cursorState(false);
          clabel->clear();
       }
+      // initiate a (Graph)vertex
       else if(clabel->text() == "V"){
          // instantiate the vertex
          GraphVertex * v;
@@ -140,6 +141,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          cursorState(false);
          clabel->clear();
       }
+      // do an X something
       else if(clabel->text() == "X"){
          /*functionality placeholder*/
 
@@ -147,6 +149,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          cursorState(false);
          clabel->clear();
       }
+      // do a Y something
       else if(clabel->text() == "Y"){
          /*functionality placeholder*/
 
@@ -154,6 +157,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          cursorState(false);
          clabel->clear();
       }
+      // delete (Graph)vertex X and all connected (Graph)edges
       else if(clabel->text() == "Z"){
          /*functionality placeholder*/
 
@@ -161,12 +165,13 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          cursorState(false);
          clabel->clear();
       }
-      QGraphicsScene::mousePressEvent(event);
    }
 
    if(event->button() == Qt::RightButton)
       // prevents false positives?
       event->ignore();
+
+   QGraphicsScene::mousePressEvent(event);
 }
 
 void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) {
@@ -201,7 +206,7 @@ void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) {
             && p1items.first() != p2items.first()){
          // create a pointer to the (Graph)vertex designated as p1
          GraphVertex * p1v= qgraphicsitem_cast<GraphVertex *>(p1items.first());
-         // restore the 'movable' property of p1v that was suspended at
+         // restore the 'movable' property of p1v, which was suspended at
          // mousePressEvent
          p1v->setFlag(QGraphicsItem::ItemIsMovable, true);
          // create a pointer to the (Graph)vertex designated as p2
@@ -265,7 +270,7 @@ QList<GraphVertex *> GraphFrame::collectVertices(){
 
    // cast any QGraphicsItem as a GraphVertex, using its virtual (int) Type as
    // an identifier, then, collect it
-   for (QGraphicsItem * i : allitems) {
+   for (QGraphicsItem * i : qAsConst(allitems)) {
       if(i->type() == GraphVertex::Type){
          GraphVertex * iisv= qgraphicsitem_cast<GraphVertex *>(i);
          allvs.push_back(iisv);

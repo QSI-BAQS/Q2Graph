@@ -29,6 +29,8 @@ void GraphVertex::addEdge(GraphEdge * edge) {
 void GraphVertex::removeEdge(GraphEdge * edge) {
    edges.removeAll(edge);
 };
+
+void GraphVertex::removeEdges() {}
 */
 void GraphVertex::resetColour(const QColor & colour) {
    vertexcircumferencepen= QPen(colour,2);

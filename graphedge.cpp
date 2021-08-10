@@ -24,7 +24,7 @@ GraphEdge::GraphEdge(GraphVertex * p1v, GraphVertex * p2v
 
 GraphEdge::~GraphEdge() {};
 
-
+// slot to GraphVertex::resetColour signal?
 void GraphEdge::resetColour(const QColor & colour) {
    edgecolour= QPen(colour, 2);
    update();
