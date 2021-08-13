@@ -1,5 +1,8 @@
 #include "graphvertex.h"
 #include "graphedge.h"
+// enables *QGraphicsView::scene() const, 'a pointer to the scene currently
+// visualised in the view'
+#include <QGraphicsScene>
 
 
 // public:
@@ -25,13 +28,27 @@ void GraphVertex::addEdge(GraphEdge * edge) {
 //qDebug() << "edge added:" << edge << "type():" << edge->type();
    edges.push_back(edge);
 };
-/*
+
 void GraphVertex::removeEdge(GraphEdge * edge) {
    edges.removeAll(edge);
 };
 
-void GraphVertex::removeEdges() {}
-*/
+void GraphVertex::z_removeEdges() {
+   // deleting (dynamic) objects then deallocating memory don't mix: recall,
+   // removeEdge() will execute against the (master) 'edges' vector
+   const auto z_edges= edges;
+
+   for(GraphEdge * e : z_edges) {
+      // remove the edge from both vertices...
+      e->p1v()->removeEdge(e);
+      e->p2v()->removeEdge(e);
+      // back it out of the GraphFrame (QGraphicsScene) container...
+      scene()->removeItem(e);
+      // deallocate the memory
+      delete e;
+   }
+}
+
 void GraphVertex::resetColour(const QColor & colour) {
    vertexcircumferencepen= QPen(colour,2);
    //edges.at(X)->resetColour(colour); ???
@@ -44,6 +61,14 @@ void GraphVertex::setVertexID(unsigned int vscount) {
 }
 
 // protected:
+void GraphVertex::contextMenuEvent(QGraphicsSceneContextMenuEvent * event) {
+   vertexmenu= new QMenu;
+   vertexmenu->addAction("v_Delete");
+   vertexmenu->addAction("--v_dummy--");
+
+   vertexmenu->exec(event->screenPos());
+}
+
 QVariant GraphVertex::itemChange(GraphicsItemChange change, const QVariant & value) {
    if(change == QGraphicsItem::ItemPositionChange) {
       for(GraphEdge * edge : qAsConst(edges))

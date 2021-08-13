@@ -2,11 +2,20 @@
 #define GRAPHEDGE_H
 #pragma once
 
+#include <QAction>
 #include <QDebug>
 #include <QGraphicsLineItem>
+#include <QGraphicsSceneContextMenuEvent>
+#include <QMenu>
 #include <QPen>
 
 class GraphVertex;  // for GraphEdge constructor
+
+QT_BEGIN_NAMESPACE
+class QGraphicsSceneContextMenuEvent;
+class QMenu;
+QT_END_NAMESPACE
+
 
 class GraphEdge : public QGraphicsLineItem
 {
@@ -26,8 +35,14 @@ public:
 
    int type() const override { return Type; }
 
+protected:
+   void contextMenuEvent(QGraphicsSceneContextMenuEvent * event) override;
+
 private:
    QPen edgecolour {Qt::black, 2};
+
+   QMenu * edgemenu {};
+
    GraphVertex * p1vertex {};
    GraphVertex * p2vertex {};
 };

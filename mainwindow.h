@@ -3,15 +3,13 @@
 
 #include "graphvertex.h"
 
-#include <QLabel>
 #include <QMainWindow>
 
 class GraphFrame;
 
 QT_BEGIN_NAMESPACE
-class QAction;
-namespace Ui { class MainWindow; }
 class QGraphicsView;
+namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -21,8 +19,6 @@ class MainWindow : public QMainWindow
 public:
    MainWindow(QWidget * parent = nullptr);
    ~MainWindow();
-
-   //QLabel * clabel {};
 
 private:
    Ui::MainWindow * ui {};

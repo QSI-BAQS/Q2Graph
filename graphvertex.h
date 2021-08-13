@@ -4,17 +4,21 @@
 
 #include <QDebug>
 
+#include <QAction>
 #include <QGraphicsEllipseItem>
+#include <QGraphicsSceneContextMenuEvent>
 #include <QGraphicsSceneMouseEvent>
+#include <QMenu>
 #include <QPainter>
 #include <QVector>
 
 class GraphEdge;
-/*
+
 QT_BEGIN_NAMESPACE
+class QGraphicsSceneContextMenuEvent;
 class QMenu;
 QT_END_NAMESPACE
-*/
+
 class GraphVertex : public QGraphicsEllipseItem
 {
 public:
@@ -31,14 +35,14 @@ public:
    int type() const override { return Type; }
 
    void addEdge(GraphEdge * edge);
-   //void removeEdge(GraphEdge * edge);
-   //void removeEdges();
+
+   void z_removeEdges();
 
    void resetColour(const QColor & colour);
    void setVertexID(unsigned int vscount);
 
 protected:
-   //void contextMenuEvent(QGraphicsSceneContextMenuEvent * event) override;
+   void contextMenuEvent(QGraphicsSceneContextMenuEvent * event) override;
    QVariant itemChange(GraphicsItemChange change
                        , const QVariant & value) override;
    void paint(QPainter * painter, const QStyleOptionGraphicsItem * option
@@ -54,7 +58,10 @@ private:
    unsigned int vertexid {};
    QFont vertexidfont {"SansSerif", 8, QFont::Normal};
    QPen vertexidpen {Qt::darkBlue, 1};
-   //QMenu * vertexmenu {};
+
+   QMenu * vertexmenu {};
+
+   void removeEdge(GraphEdge * edge);
 };
 
 #endif // GRAPHVERTEX_H

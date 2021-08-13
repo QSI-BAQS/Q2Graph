@@ -15,7 +15,6 @@ class QColor;
 class QGraphicsEllipseItem;
 class QGraphicsItem;
 class QGraphicsLineItem;
-//class QMenu;
 QT_END_NAMESPACE
 
 class GraphFrame : public QGraphicsScene

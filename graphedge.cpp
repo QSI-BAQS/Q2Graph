@@ -37,3 +37,13 @@ void GraphEdge::resetEdgePosition() {
       setLine(edge);
    }
 }
+
+// protected:
+void GraphEdge::contextMenuEvent(QGraphicsSceneContextMenuEvent * event) {
+
+   edgemenu= new QMenu;
+   edgemenu->addAction("e_Delete");
+   edgemenu->addAction("--e_dummy--");
+
+   edgemenu->exec(event->screenPos());
+}

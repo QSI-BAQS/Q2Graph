@@ -12,6 +12,7 @@ GraphFrame::GraphFrame(QWidget *parent)
    clabel->setWindowFlag(Qt::ToolTip);
    //clabel->setAttribute(Qt::WA_TranslucentBackground);
    //clabel->setStyleSheet("background-color: rgba(255, 255, 255, 0);");
+
 }
 
 GraphFrame::~GraphFrame()
@@ -21,29 +22,43 @@ GraphFrame::~GraphFrame()
 
 // protected:
 void GraphFrame::keyPressEvent(QKeyEvent * event) {
-   if(event->key() == Qt::Key_E){
+   QVector<int> cursorflags {Qt::Key_E
+            , Qt::Key_O
+            , Qt::Key_V
+            , Qt::Key_X
+            , Qt::Key_Y
+            , Qt::Key_Z};
+
+   if(cursorflags.contains(event->key()))
+      cursorState(true);
+   else
+      cursorState(false);
+
+   switch (event->key()) {
+   case Qt::Key_E:
       setCursorLabel("E");
-      cursorState(true);
-   }
-   else if(event->key() == Qt::Key_O){
+      break;
+   case Qt::Key_O:
       setCursorLabel("O");
-      cursorState(true);
-   }
-   else if (event->key() == Qt::Key_V){
+      break;
+   case Qt::Key_V:
+//qDebug() << "cursorState():" << *p_cursorFT;
       setCursorLabel("V");
-      cursorState(true);
-   }
-   else if (event->key() == Qt::Key_X){
+      break;
+   case Qt::Key_X:
       setCursorLabel("X");
-      cursorState(true);
-   }
-   else if (event->key() == Qt::Key_Y){
+      break;
+   case Qt::Key_Y:
       setCursorLabel("Y");
-      cursorState(true);
-   }
-   else if (event->key() == Qt::Key_Z){
+      break;
+   case Qt::Key_Z:
       setCursorLabel("Z");
-      cursorState(true);
+      // to avoid capturing unintended vertex(s) at mousePressEvent
+      clearSelection();
+      break;
+   default:
+//qDebug() << "cursorState():" << *p_cursorFT;
+      QGraphicsScene::keyPressEvent(event);
    }
 }
 
@@ -65,27 +80,25 @@ void GraphFrame::mouseMoveEvent(QGraphicsSceneMouseEvent * event) {
 void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
    // LEFT CLICK events
    if(event->button() == Qt::LeftButton){
-      // initiate a (Graph)edge
+
+      // operation: instantiate a (Graph)edge
       if(clabel->text() == "E"){
+         // collect the p1 vertex at the cursor hotspot, 'upon click'
+         QList<QGraphicsItem *> localvs= items(event->scenePos()
+                                               , Qt::ContainsItemShape);
          // prevent a runtime exception caused by nothing being at the cursor
-         // hotspot, 'upon click'
-         if(items(event->scenePos()).isEmpty()){
-//qDebug() << "nothing at the hotspot, try again";
-            // clear 'E' status and drop the cursor label
+         // hotspot, 'upon click'.  Note, by not failing this gate condition,
+         // element 'localvs.first()' must be a (Graph)vertex
+         if(localvs.isEmpty() || localvs.first()->type() != GraphVertex::Type){
+            // abort:  drop 'E' status and the cursor label
             cursorState(false);
             clabel->clear();
             return ;
          }
-         // collect the p1 vertex at the cursor hotspot, 'upon click'
-         QList<QGraphicsItem *> localvs= items(event->scenePos());
 
-         // remove any first element of localvs, which is not a vertex
-         if(localvs.first()->type() != GraphVertex::Type)
-            localvs.removeFirst();
-         else
-            // prevent the subsequent mouseMoveEvent, which is meant solely to
-            // draw an edge, from bringing the vertex along with it
-            localvs.first()->setFlag(QGraphicsItem::ItemIsMovable, false);
+         // prevent the ensuing mouseMoveEvent, which is meant solely to extend
+         // an edge, from bringing the vertex along with it
+         localvs.first()->setFlag(QGraphicsItem::ItemIsMovable, false);
 
          // initialise a 'tracer' line segment; the actual edge will
          // be set in arrears at the subsequent mouseReleaseEvent
@@ -103,7 +116,8 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          // QGraphicsSceneMouseEvent's
          clabel->hide();
       }
-      // do an O something
+
+      // operation: do an O something
       else if(clabel->text() == "O"){
          /*functionality placeholder*/
 
@@ -111,7 +125,8 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          cursorState(false);
          clabel->clear();
       }
-      // initiate a (Graph)vertex
+
+      // operation: instantiate a (Graph)vertex
       else if(clabel->text() == "V"){
          // instantiate the vertex
          GraphVertex * v;
@@ -141,7 +156,8 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          cursorState(false);
          clabel->clear();
       }
-      // do an X something
+
+      // operation: X local Pauli measurement
       else if(clabel->text() == "X"){
          /*functionality placeholder*/
 
@@ -149,7 +165,8 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          cursorState(false);
          clabel->clear();
       }
-      // do a Y something
+
+      // operation: Y local Pauli measurement
       else if(clabel->text() == "Y"){
          /*functionality placeholder*/
 
@@ -157,13 +174,34 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          cursorState(false);
          clabel->clear();
       }
-      // delete (Graph)vertex X and all connected (Graph)edges
-      else if(clabel->text() == "Z"){
-         /*functionality placeholder*/
 
-         // reset CURSOR state
-         cursorState(false);
-         clabel->clear();
+      // operation: Z local Pauli measurement
+      else if(clabel->text() == "Z"){
+         // operation: delete a (Graph)vertex and its connected (Graph)edges
+         // collect only the p1 vertex at the cursor hotspot, 'upon click'
+         QList<QGraphicsItem *> del_vertex= items(event->scenePos()
+                                                , Qt::ContainsItemShape);
+         // ensure z_vertex has a vertex element upon which to execute the
+         // delete operations
+         if(del_vertex.isEmpty() || del_vertex.first()->type() != GraphVertex::Type){
+            // abort: drop 'Z' status and the cursor label
+            cursorState(false);
+            clabel->clear();
+            return ;
+         }
+         else {
+            // cast a QGraphicsItem * as a GraphVertex * in order to access
+            // GraphVertex members
+            GraphVertex * v4fs= qgraphicsitem_cast<GraphVertex *>(del_vertex.first());
+
+            v4fs->z_removeEdges();
+            removeItem(v4fs);
+            delete v4fs;
+
+            // reset CURSOR state
+            cursorState(false);
+            clabel->clear();
+         }
       }
    }
 
@@ -175,6 +213,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 }
 
 void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) {
+
    if(tracer != nullptr && clabel->text() == "E"){
       // staging area for the vertex identified at p1 coordinates
       QList<QGraphicsItem *> p1items= items(tracer->line().p1());
