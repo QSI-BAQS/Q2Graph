@@ -1,11 +1,16 @@
 #include "graphedge.h"
 #include "graphvertex.h"
+// enables *QGraphicsView::scene() const, 'a pointer to the scene currently
+// visualised in the view'
+#include <QGraphicsScene>
 
 
 // public:
-GraphEdge::GraphEdge(GraphVertex * p1v, GraphVertex * p2v
+GraphEdge::GraphEdge(GraphVertex * p1v, GraphVertex * p2v, QMenu * contextmenu
                      , QGraphicsItem * parent)
-   : QGraphicsLineItem (parent), p1vertex(p1v), p2vertex(p2v)
+   : QGraphicsLineItem(parent), contextmenu_e(contextmenu), p1vertex(p1v)
+   , p2vertex(p2v)
+
 {
    // set edge colour and width
    setPen(edgecolour);
@@ -40,10 +45,8 @@ void GraphEdge::resetEdgePosition() {
 
 // protected:
 void GraphEdge::contextMenuEvent(QGraphicsSceneContextMenuEvent * event) {
-
-   edgemenu= new QMenu;
-   edgemenu->addAction("e_Delete");
-   edgemenu->addAction("--e_dummy--");
-
-   edgemenu->exec(event->screenPos());
+   // the 'heavy lifting' for this functionality occurs in GraphFrame
+   scene()->clearSelection();
+   setSelected(true);
+   contextmenu_e->exec(event->screenPos());
 }

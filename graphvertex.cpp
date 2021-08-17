@@ -6,8 +6,8 @@
 
 
 // public:
-GraphVertex::GraphVertex(QGraphicsItem * parent)
-   : QGraphicsEllipseItem(parent)
+GraphVertex::GraphVertex(QMenu * contextmenu, QGraphicsItem * parent)
+   : QGraphicsEllipseItem(parent), contextmenu_v(contextmenu)
 {
    // standard vertex: size, fill, circumference pen
    setRect(vertexboundaryrect);
@@ -62,11 +62,10 @@ void GraphVertex::setVertexID(unsigned int vscount) {
 
 // protected:
 void GraphVertex::contextMenuEvent(QGraphicsSceneContextMenuEvent * event) {
-   vertexmenu= new QMenu;
-   vertexmenu->addAction("v_Delete");
-   vertexmenu->addAction("--v_dummy--");
-
-   vertexmenu->exec(event->screenPos());
+   // the 'heavy lifting' for this menu occurs in GraphFrame
+   scene()->clearSelection();
+   setSelected(true);
+   contextmenu_v->exec(event->screenPos());
 }
 
 QVariant GraphVertex::itemChange(GraphicsItemChange change, const QVariant & value) {

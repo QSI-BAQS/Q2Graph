@@ -13,12 +13,11 @@ GraphFrame::GraphFrame(QWidget *parent)
    //clabel->setAttribute(Qt::WA_TranslucentBackground);
    //clabel->setStyleSheet("background-color: rgba(255, 255, 255, 0);");
 
+   //createActions();
+   //createMenus();
 }
 
-GraphFrame::~GraphFrame()
-{
-   delete clabel;
-}
+GraphFrame::~GraphFrame() {}
 
 // protected:
 void GraphFrame::keyPressEvent(QKeyEvent * event) {
@@ -130,7 +129,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
       else if(clabel->text() == "V"){
          // instantiate the vertex
          GraphVertex * v;
-         v= new GraphVertex();
+         v= new GraphVertex(vertexmenu);
 
          // set vertex label (REVISIT: with delete operation)
          /* all vertices have the same .type(), which means .indexOf() is
@@ -177,37 +176,13 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
       // operation: Z local Pauli measurement
       else if(clabel->text() == "Z"){
-         // operation: delete a (Graph)vertex and its connected (Graph)edges
-         // collect only the p1 vertex at the cursor hotspot, 'upon click'
-         QList<QGraphicsItem *> del_vertex= items(event->scenePos()
-                                                , Qt::ContainsItemShape);
-         // ensure z_vertex has a vertex element upon which to execute the
-         // delete operations
-         if(del_vertex.isEmpty() || del_vertex.first()->type() != GraphVertex::Type){
-            // abort: drop 'Z' status and the cursor label
-            cursorState(false);
-            clabel->clear();
-            return ;
-         }
-         else {
-            // cast a QGraphicsItem * as a GraphVertex * in order to access
-            // GraphVertex members
-            GraphVertex * v4fs= qgraphicsitem_cast<GraphVertex *>(del_vertex.first());
+         /*functionality placeholder*/
 
-            v4fs->z_removeEdges();
-            removeItem(v4fs);
-            delete v4fs;
-
-            // reset CURSOR state
-            cursorState(false);
-            clabel->clear();
-         }
+         // reset CURSOR state
+         cursorState(false);
+         clabel->clear();
       }
    }
-
-   if(event->button() == Qt::RightButton)
-      // prevents false positives?
-      event->ignore();
 
    QGraphicsScene::mousePressEvent(event);
 }
@@ -251,7 +226,7 @@ void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) {
          // create a pointer to the (Graph)vertex designated as p2
          GraphVertex * p2v= qgraphicsitem_cast<GraphVertex *>(p2items.first());
          // use p1v and p2v as constructors to instantiate the edge
-         GraphEdge * e= new GraphEdge(p1v, p2v);
+         GraphEdge * e= new GraphEdge(p1v, p2v, edgemenu);
 
          // add the edge to (QVector) 'edges' of vertices p1 and p2
          p1v->addEdge(e);
@@ -272,6 +247,16 @@ void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) {
 }
 
 // private:
+void GraphFrame::createActions() {
+   // use a lambda to call Delete?
+   e_deleteaction= new QAction("Delete", this);
+   /*connect(e_deleteaction, &QAction::triggered, this, &GraphFrame::deleteEdge);*/
+   // use a lambda to call Delete?
+   v_deleteaction= new QAction("Delete", this);
+   /*connect(v_deleteaction, &QAction::triggered, this, &GraphFrame::deleteVertex);*/
+
+}
+
 void GraphFrame::cursorState(bool setTF) {
    // 'setter' function
    // pre-condition: setTF == true | false
@@ -300,8 +285,20 @@ void GraphFrame::setCursorLabel(QString tag) {
       clabel->show();
 };
 
+void GraphFrame::deleteEdge() {
+
+}
+
+void GraphFrame::createMenus() {
+   edgemenu->addAction(e_deleteaction);
+   edgemenu->addAction("-- e_dummy --");
+
+   vertexmenu->addAction(v_deleteaction);
+   vertexmenu->addAction("-- v_dummy --");
+}
+
 // select QList over QVector for its guarantee of preserving entry order
-QList<GraphVertex *> GraphFrame::collectVertices(){
+QList<GraphVertex *> GraphFrame::collectVertices() {
    // source
    QList<QGraphicsItem *> allitems= items();
    // target
@@ -317,4 +314,31 @@ QList<GraphVertex *> GraphFrame::collectVertices(){
    }
 
    return allvs;
+}
+
+void GraphFrame::deleteVertex() {/*
+   // operation: delete a (Graph)vertex and its connected (Graph)edges
+   // collect only the p1 vertex at the cursor hotspot, 'upon click'
+   QList<QGraphicsItem *> del_vertex= items(vpos, Qt::ContainsItemShape);
+   // ensure z_vertex has a vertex element upon which to execute the
+   // delete operations
+   if(del_vertex.isEmpty() || del_vertex.first()->type() != GraphVertex::Type){
+      // abort: drop 'Z' status and the cursor label
+      cursorState(false);
+      clabel->clear();
+      return ;
+   }
+   else {
+      // cast a QGraphicsItem * as a GraphVertex * in order to access
+      // GraphVertex members
+      GraphVertex * v4fs= qgraphicsitem_cast<GraphVertex *>(del_vertex.first());
+
+      v4fs->z_removeEdges();
+      removeItem(v4fs);
+      delete v4fs;
+
+      // reset CURSOR state
+      cursorState(false);
+      clabel->clear();
+   }*/
 }

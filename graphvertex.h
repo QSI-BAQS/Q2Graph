@@ -4,7 +4,6 @@
 
 #include <QDebug>
 
-#include <QAction>
 #include <QGraphicsEllipseItem>
 #include <QGraphicsSceneContextMenuEvent>
 #include <QGraphicsSceneMouseEvent>
@@ -22,7 +21,7 @@ QT_END_NAMESPACE
 class GraphVertex : public QGraphicsEllipseItem
 {
 public:
-   GraphVertex(QGraphicsItem * parent= nullptr);
+   GraphVertex(QMenu * contextmenu, QGraphicsItem * parent= nullptr);
    // resolve compile error 'undefined reference to XXX vtable', see: https://
    // stackoverflow.com/questions/14010922/qt-undefined-reference-to-vtable
    ~GraphVertex();
@@ -49,17 +48,17 @@ protected:
               , QWidget * widget= nullptr) override;
 
 private:
+   QMenu * contextmenu_v {};
+
    QVector<GraphEdge *> edges;
 
    QRectF vertexboundaryrect {QPointF(0.0,0.0), QSizeF(20.0,20.0)};
    QPen vertexcircumferencepen {Qt::black, 2};
-   QBrush vertexfill {QColor::fromRgb(245,245,245)};   // white smoke
+   QBrush vertexfill {QColor::fromRgb(245,245,245)};   // 'white smoke'
 
    unsigned int vertexid {};
    QFont vertexidfont {"SansSerif", 8, QFont::Normal};
    QPen vertexidpen {Qt::darkBlue, 1};
-
-   QMenu * vertexmenu {};
 
    void removeEdge(GraphEdge * edge);
 };
