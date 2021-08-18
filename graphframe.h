@@ -31,11 +31,6 @@ protected:
    void mousePressEvent(QGraphicsSceneMouseEvent * event) override;
    void mouseReleaseEvent(QGraphicsSceneMouseEvent * event) override;
 
-
-private slots:
-   void deleteEdge();
-   void deleteVertex();
-
 private:
    bool ft[2] {false,true};
    QLabel * clabel {};
@@ -43,18 +38,16 @@ private:
    QMenu * vertexmenu {};
    QGraphicsLineItem * tracer {};
    const bool * p_cursorFT {&ft[0]};
-
-   QAction * e_deleteaction;
-   QAction * v_deleteaction;
-
-   void createActions();
+   QList<GraphVertex *> vertices {};
 
    void cursorState(bool setTF);
    void setCursorLabel(QString tag);
 
+   void deleteEdge();
+
    void createMenus();
 
-   QList<GraphVertex *> collectVertices();
+   void deleteVertex();
 };
 
 #endif // GRAPHFRAME_H

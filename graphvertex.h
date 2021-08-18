@@ -34,8 +34,8 @@ public:
    int type() const override { return Type; }
 
    void addEdge(GraphEdge * edge);
-
-   void z_removeEdges();
+   void removeEdge(GraphEdge * edge);
+   void removeEdges();
 
    void resetColour(const QColor & colour);
    void setVertexID(unsigned int vscount);
@@ -59,8 +59,6 @@ private:
    unsigned int vertexid {};
    QFont vertexidfont {"SansSerif", 8, QFont::Normal};
    QPen vertexidpen {Qt::darkBlue, 1};
-
-   void removeEdge(GraphEdge * edge);
 };
 
 #endif // GRAPHVERTEX_H

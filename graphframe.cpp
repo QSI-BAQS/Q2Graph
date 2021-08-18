@@ -13,8 +13,7 @@ GraphFrame::GraphFrame(QWidget *parent)
    //clabel->setAttribute(Qt::WA_TranslucentBackground);
    //clabel->setStyleSheet("background-color: rgba(255, 255, 255, 0);");
 
-   //createActions();
-   //createMenus();
+   createMenus();
 }
 
 GraphFrame::~GraphFrame() {}
@@ -78,110 +77,112 @@ void GraphFrame::mouseMoveEvent(QGraphicsSceneMouseEvent * event) {
 
 void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
    // LEFT CLICK events
-   if(event->button() == Qt::LeftButton){
+   if(event->button() != Qt::LeftButton)
+      return ;
 
-      // operation: instantiate a (Graph)edge
-      if(clabel->text() == "E"){
-         // collect the p1 vertex at the cursor hotspot, 'upon click'
-         QList<QGraphicsItem *> localvs= items(event->scenePos()
-                                               , Qt::ContainsItemShape);
-         // prevent a runtime exception caused by nothing being at the cursor
-         // hotspot, 'upon click'.  Note, by not failing this gate condition,
-         // element 'localvs.first()' must be a (Graph)vertex
-         if(localvs.isEmpty() || localvs.first()->type() != GraphVertex::Type){
-            // abort:  drop 'E' status and the cursor label
-            cursorState(false);
-            clabel->clear();
-            return ;
-         }
-
-         // prevent the ensuing mouseMoveEvent, which is meant solely to extend
-         // an edge, from bringing the vertex along with it
-         localvs.first()->setFlag(QGraphicsItem::ItemIsMovable, false);
-
-         // initialise a 'tracer' line segment; the actual edge will
-         // be set in arrears at the subsequent mouseReleaseEvent
-         tracer= new QGraphicsLineItem(
-                  QLineF(event->scenePos()
-                         , event->scenePos()));
-         tracer->setPen(QPen(Qt::black,2));
-
-         // add tracer to the GraphFrame (QGraphicsScene) container
-         addItem(tracer);
-
-         // reset CURSOR state
-         cursorState(false);
-         // hide the label: "E" is required as a boolean proxy in subsequent
-         // QGraphicsSceneMouseEvent's
-         clabel->hide();
-      }
-
-      // operation: do an O something
-      else if(clabel->text() == "O"){
-         /*functionality placeholder*/
-
-         // reset CURSOR state
+   // operation: instantiate a (Graph)edge
+   if(clabel->text() == "E"){
+      // collect the p1 vertex at the cursor hotspot, 'upon click'
+      QList<QGraphicsItem *> localvs= items(event->scenePos()
+                                            , Qt::ContainsItemShape);
+      // prevent a runtime exception caused by nothing being at the cursor
+      // hotspot, 'upon click'.  Note, by not failing this gate condition,
+      // element 'localvs.first()' must be a (Graph)vertex
+      if(localvs.isEmpty() || localvs.first()->type() != GraphVertex::Type){
+         // abort:  drop 'E' status and the cursor label
          cursorState(false);
          clabel->clear();
+         return ;
       }
 
-      // operation: instantiate a (Graph)vertex
-      else if(clabel->text() == "V"){
-         // instantiate the vertex
-         GraphVertex * v;
-         v= new GraphVertex(vertexmenu);
+      // prevent the ensuing mouseMoveEvent, which is meant solely to extend
+      // an edge, from bringing the vertex along with it
+      localvs.first()->setFlag(QGraphicsItem::ItemIsMovable, false);
 
-         // set vertex label (REVISIT: with delete operation)
-         /* all vertices have the same .type(), which means .indexOf() is
-          * ineffective
-         */
-         v->setVertexID(collectVertices().count());
+      // initialise a 'tracer' line segment; the actual edge will
+      // be set in arrears at the subsequent mouseReleaseEvent
+      tracer= new QGraphicsLineItem(
+               QLineF(event->scenePos()
+                      , event->scenePos()));
+      tracer->setPen(QPen(Qt::black,2));
 
-         // add a QGraphicsItem (GraphVertex) to the GraphFrame
-         // (QGraphicsScene) container
-//qDebug() << "vertex added:" << v << "type():" << v->type();
-         addItem(v);
+      // add tracer to the GraphFrame (QGraphicsScene) container
+      addItem(tracer);
 
-         // move rendered vertex from beneath the cursor
-         QPointF adjScenePos= QPointF(
-                  (event->scenePos().x()) - 10.0
-                  ,(event->scenePos().y()) - 20.0);
-         // TO DO: clear v->setrect() border; why are initial vertex inserts
-         // farther from the cursor than latter inserts?
-         // assign scene position (logical coordinates) to the vertex
-         v->setPos(adjScenePos);
+      // reset CURSOR state
+      cursorState(false);
+      // hide the label: "E" is required as a boolean proxy in subsequent
+      // QGraphicsSceneMouseEvent's
+      clabel->hide();
+   }
 
-         // reset CURSOR state
-         cursorState(false);
-         clabel->clear();
-      }
+   // operation: do an O something
+   else if(clabel->text() == "O"){
+      /*functionality placeholder*/
 
-      // operation: X local Pauli measurement
-      else if(clabel->text() == "X"){
-         /*functionality placeholder*/
+      // reset CURSOR state
+      cursorState(false);
+      clabel->clear();
+   }
 
-         // reset CURSOR state
-         cursorState(false);
-         clabel->clear();
-      }
+   // operation: instantiate a (Graph)vertex
+   else if(clabel->text() == "V"){
+      // instantiate the vertex
+      GraphVertex * v;
+      v= new GraphVertex(vertexmenu);
 
-      // operation: Y local Pauli measurement
-      else if(clabel->text() == "Y"){
-         /*functionality placeholder*/
+      // collect the (GraphVertex *) vertex
+      vertices.push_back(v);
 
-         // reset CURSOR state
-         cursorState(false);
-         clabel->clear();
-      }
+      // set the vertex id number; all vertices have the same .type() so
+      //   .indexOf() is useless as a proxy id
+      v->setVertexID(vertices.count());
 
-      // operation: Z local Pauli measurement
-      else if(clabel->text() == "Z"){
-         /*functionality placeholder*/
+      // add a QGraphicsItem (GraphVertex) to the GraphFrame
+      // (QGraphicsScene) container
+//qDebug() << "vertex added:" << v << "type():" << v->type();   
+      addItem(v);
 
-         // reset CURSOR state
-         cursorState(false);
-         clabel->clear();
-      }
+      // move rendered vertex from beneath the cursor
+      QPointF adjScenePos= QPointF(
+               (event->scenePos().x()) - 10.0
+               , (event->scenePos().y()) - 20.0);
+
+      // TO DO: clear v->setrect() border; why are initial vertex inserts
+      // farther from the cursor than latter inserts?
+      // assign scene position (logical coordinates) to the vertex
+      v->setPos(adjScenePos);
+
+      // reset CURSOR state
+      cursorState(false);
+      clabel->clear();
+   }
+
+   // operation: X local Pauli measurement
+   else if(clabel->text() == "X"){
+      /*functionality placeholder*/
+
+      // reset CURSOR state
+      cursorState(false);
+      clabel->clear();
+   }
+
+   // operation: Y local Pauli measurement
+   else if(clabel->text() == "Y"){
+      /*functionality placeholder*/
+
+      // reset CURSOR state
+      cursorState(false);
+      clabel->clear();
+   }
+
+   // operation: Z local Pauli measurement
+   else if(clabel->text() == "Z"){
+      /*functionality placeholder*/
+
+      // reset CURSOR state
+      cursorState(false);
+      clabel->clear();
    }
 
    QGraphicsScene::mousePressEvent(event);
@@ -206,8 +207,7 @@ void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) {
 //qDebug() << "p2items.count():" << p2items.count();
 
       // having now selected vertices p1 and p2 to pass as constructors to
-      // GraphEdge, back out the variable tracer from the GraphFrame
-      // (QGraphicsScene) container...
+      // GraphEdge, back out the variable tracer from GraphFrame
       removeItem(tracer);
       // then, deallocate the memory
       delete tracer;
@@ -246,17 +246,6 @@ void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) {
    QGraphicsScene::mouseReleaseEvent(event);
 }
 
-// private:
-void GraphFrame::createActions() {
-   // use a lambda to call Delete?
-   e_deleteaction= new QAction("Delete", this);
-   /*connect(e_deleteaction, &QAction::triggered, this, &GraphFrame::deleteEdge);*/
-   // use a lambda to call Delete?
-   v_deleteaction= new QAction("Delete", this);
-   /*connect(v_deleteaction, &QAction::triggered, this, &GraphFrame::deleteVertex);*/
-
-}
-
 void GraphFrame::cursorState(bool setTF) {
    // 'setter' function
    // pre-condition: setTF == true | false
@@ -286,59 +275,78 @@ void GraphFrame::setCursorLabel(QString tag) {
 };
 
 void GraphFrame::deleteEdge() {
+   // delete a (Graph)edge
+   // pre-condition: target object is type, GraphEdge
+   // post-condition: target (Graph)edge is removed, any formerly connected
+   //   (Graph)vertices are unaffected
 
-}
-
-void GraphFrame::createMenus() {
-   edgemenu->addAction(e_deleteaction);
-   edgemenu->addAction("-- e_dummy --");
-
-   vertexmenu->addAction(v_deleteaction);
-   vertexmenu->addAction("-- v_dummy --");
-}
-
-// select QList over QVector for its guarantee of preserving entry order
-QList<GraphVertex *> GraphFrame::collectVertices() {
-   // source
-   QList<QGraphicsItem *> allitems= items();
-   // target
-   QList<GraphVertex *> allvs {};
-
-   // cast any QGraphicsItem as a GraphVertex, using its virtual (int) Type as
-   // an identifier, then, collect it
-   for (QGraphicsItem * i : qAsConst(allitems)) {
-      if(i->type() == GraphVertex::Type){
-         GraphVertex * iisv= qgraphicsitem_cast<GraphVertex *>(i);
-         allvs.push_back(iisv);
-      }
-   }
-
-   return allvs;
-}
-
-void GraphFrame::deleteVertex() {/*
-   // operation: delete a (Graph)vertex and its connected (Graph)edges
-   // collect only the p1 vertex at the cursor hotspot, 'upon click'
-   QList<QGraphicsItem *> del_vertex= items(vpos, Qt::ContainsItemShape);
-   // ensure z_vertex has a vertex element upon which to execute the
-   // delete operations
-   if(del_vertex.isEmpty() || del_vertex.first()->type() != GraphVertex::Type){
-      // abort: drop 'Z' status and the cursor label
-      cursorState(false);
-      clabel->clear();
+   // collect only the edge at the cursor hotspot, 'upon click'
+   QList<QGraphicsItem *> del_edge= selectedItems();
+   // either first object of del_edge is type GraphEdge or, abort
+   if(del_edge.isEmpty() || del_edge.first()->type() != GraphEdge::Type){
       return ;
    }
    else {
-      // cast a QGraphicsItem * as a GraphVertex * in order to access
+      // cast a QGraphicsItem * as a GraphEdge * in order to access GraphEdge
+      // methods
+      GraphEdge * e4fs= qgraphicsitem_cast<GraphEdge *>(del_edge.first());
+
+      // remove the edge from 'edges' container of both vertices...
+      e4fs->p1v()->removeEdge(e4fs);
+      e4fs->p2v()->removeEdge(e4fs);
+      // back the edge out of GraphFrame...
+      removeItem(e4fs);
+      // deallocate the memory
+      delete e4fs;
+   }
+}
+
+void GraphFrame::createMenus() {
+   edgemenu= new QMenu("edge menu");
+   edgemenu->addAction("Delete", this, [this](){ deleteEdge(); });
+   edgemenu->addAction("-- place 2 --");
+
+   vertexmenu= new QMenu("vertex menu");
+   vertexmenu->addAction("Delete", this, [this](){ deleteVertex();});
+   vertexmenu->addAction("-- place 2 --");
+}
+
+void GraphFrame::deleteVertex() {
+   // delete a (Graph)vertex and its connected (Graph)edges
+   // pre-condition: target object is type, GraphVertex
+   // post-condition: target (Graph)vertex and all associated (Graph)edges are
+   //   removed; the ID of each remaining vertex is reset
+
+   // collect only the vertex at the cursor hotspot, 'upon click'
+   QList<QGraphicsItem *> del_vertex= selectedItems();
+   // either operate on a GraphVertex object or, abort
+   if(del_vertex.isEmpty() || del_vertex.first()->type() != GraphVertex::Type)
+      return ;
+   else {
+      // cast a 'QGraphicsItem *' as a 'GraphVertex *' in order to access
       // GraphVertex members
       GraphVertex * v4fs= qgraphicsitem_cast<GraphVertex *>(del_vertex.first());
 
-      v4fs->z_removeEdges();
+      // remove any and all (Graph)edges connected to the vertex
+      v4fs->removeEdges();
+
+      // remove the vertex from QList 'vertices'
+      vertices.removeAll(v4fs);
+      // back the vertex out of GraphFrame...
       removeItem(v4fs);
+      // deallocate the memory
       delete v4fs;
 
-      // reset CURSOR state
-      cursorState(false);
-      clabel->clear();
-   }*/
+      // if there are any remaining vertices...
+      if(!vertices.isEmpty()){
+         unsigned int id {1};   // TO DO: mutable counter
+         // ... reset the id numbering of each vertex
+         for (GraphVertex * v : qAsConst(vertices)) {
+            v->setVertexID(id);
+            v->update();
+            id++;
+         }
+      }
+   }
 }
+
