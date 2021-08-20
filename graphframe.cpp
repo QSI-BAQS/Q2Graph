@@ -21,7 +21,7 @@ GraphFrame::~GraphFrame() {}
 // protected:
 void GraphFrame::keyPressEvent(QKeyEvent * event) {
    QVector<int> cursorflags {Qt::Key_E
-            , Qt::Key_O
+            , Qt::Key_0
             , Qt::Key_V
             , Qt::Key_X
             , Qt::Key_Y
@@ -36,8 +36,8 @@ void GraphFrame::keyPressEvent(QKeyEvent * event) {
    case Qt::Key_E:
       setCursorLabel("E");
       break;
-   case Qt::Key_O:
-      setCursorLabel("O");
+   case Qt::Key_0:
+      setCursorLabel("0");
       break;
    case Qt::Key_V:
 //qDebug() << "cursorState():" << *p_cursorFT;
@@ -116,8 +116,8 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
       clabel->hide();
    }
 
-   // operation: do an O something
-   else if(clabel->text() == "O"){
+   // operation: identity matrix
+   else if(clabel->text() == "0"){
       /*functionality placeholder*/
 
       // reset CURSOR state
@@ -178,7 +178,42 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
    // operation: Z local Pauli measurement
    else if(clabel->text() == "Z"){
-      /*functionality placeholder*/
+      // collect the vertex at the cursor hotspot, 'upon click'
+      QList<QGraphicsItem *> localvs= items(event->scenePos()
+                                            , Qt::ContainsItemShape);
+      // prevent a runtime exception caused by nothing being at the cursor
+      // hotspot, 'upon click'.  Note, by not failing this gate condition,
+      // element 'localvs.first()' must be a (Graph)vertex
+      if(localvs.isEmpty() || localvs.first()->type() != GraphVertex::Type){
+         return ;
+      }
+      // Cf. deleteVertex(), below
+      else {
+         // cast a 'QGraphicsItem *' as a 'GraphVertex *' in order to access
+         // GraphVertex members
+         GraphVertex * v4fs= qgraphicsitem_cast<GraphVertex *>(localvs.first());
+
+         // remove any and all (Graph)edges connected to the vertex
+         v4fs->removeEdges();
+
+         // remove the vertex from QList 'vertices'
+         vertices.removeAll(v4fs);
+         // back the vertex out of GraphFrame...
+         removeItem(v4fs);
+         // deallocate the memory
+         delete v4fs;
+
+         // if there are any remaining vertices...
+         if(!vertices.isEmpty()){
+            unsigned int id {1};   // TO DO: mutable counter
+            // ... reset the id numbering of each vertex
+            for (GraphVertex * v : qAsConst(vertices)) {
+               v->setVertexID(id);
+               v->update();
+               id++;
+            }
+         }
+      }
 
       // reset CURSOR state
       cursorState(false);
@@ -258,7 +293,7 @@ void GraphFrame::cursorState(bool setTF) {
 }
 
 void GraphFrame::setCursorLabel(QString tag) {
-   // create E/O/V/X/Y/Z label for cursor
+   // create E/0/V/X/Y/Z label for cursor
    // pre-condition: tag is type QString
    // post-condition: a visible, persistent label for the cursor
 
@@ -266,7 +301,7 @@ void GraphFrame::setCursorLabel(QString tag) {
    clabel->move(QCursor::pos().x() + 15
                 , QCursor::pos().y() + 10);
 
-   // set label at E/O/V/X/Y/Z
+   // set label at E/0/V/X/Y/Z
    clabel->setText(tag);
 
    // reveal a hidden cursor
@@ -301,14 +336,45 @@ void GraphFrame::deleteEdge() {
    }
 }
 
+void GraphFrame::localComplementation() {
+   // LC applied to vertex X: all vertices of X's neighbourhood not joined by
+   // a (Graph)edge to gain an edge and conversely
+   // pre-condition: target object is type, GraphVertex
+   // post-condition: edges are reconfigured to LC status
+
+   // collect only the vertex at the cursor hotspot, 'upon click'
+   QList<QGraphicsItem *> lc_vertex= selectedItems();
+   // either operate on a GraphVertex object or, abort
+   if(lc_vertex.isEmpty() || lc_vertex.first()->type() != GraphVertex::Type)
+      return ;
+   else {
+      QVector<GraphVertex *> neighbourvs {};
+
+      // cast a 'QGraphicsItem *' as a 'GraphVertex *' in order to access
+      // GraphVertex members
+      GraphVertex * lcv= qgraphicsitem_cast<GraphVertex *>(lc_vertex.first());
+
+      // capture the vertex 'at the other end' of the edge shared with vertex X
+      for (GraphEdge * e : *lcv->lcEdges()) {
+         if(e->p1v() != lcv)
+            neighbourvs.push_back(e->p2v());
+         else
+            neighbourvs.push_back(e->p1v());
+      }
+      qDebug() << "vertex X pos():" << lcv->pos() << "neighbourvs:" << neighbourvs.mid(0);
+   }
+}
+
 void GraphFrame::createMenus() {
    edgemenu= new QMenu("edge menu");
    edgemenu->addAction("Delete", this, [this](){ deleteEdge(); });
    edgemenu->addAction("-- place 2 --");
 
    vertexmenu= new QMenu("vertex menu");
-   vertexmenu->addAction("Delete", this, [this](){ deleteVertex();});
-   vertexmenu->addAction("-- place 2 --");
+   vertexmenu->addAction("Delete", this, [this](){ deleteVertex(); });
+   vertexmenu->addAction("Local_Complementation", this
+                         , [this](){ localComplementation(); });
+   vertexmenu->addAction("-- place 3 --");
 }
 
 void GraphFrame::deleteVertex() {

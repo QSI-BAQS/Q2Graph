@@ -45,6 +45,8 @@ private:
 
    void deleteEdge();
 
+   void localComplementation();
+
    void createMenus();
 
    void deleteVertex();

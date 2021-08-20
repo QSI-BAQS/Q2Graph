@@ -34,7 +34,7 @@ void GraphVertex::removeEdge(GraphEdge * edge) {
 };
 
 void GraphVertex::removeEdges() {
-   // deleting (dynamic) objects then deallocating memory don't mix: recall,
+   // deleting (dynamic) objects then deallocating memory do not mix: recall,
    // removeEdge() will execute against the (master) 'edges' vector
    const auto copy_edges= edges;
 

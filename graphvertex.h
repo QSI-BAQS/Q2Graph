@@ -34,6 +34,7 @@ public:
    int type() const override { return Type; }
 
    void addEdge(GraphEdge * edge);
+   const QVector<GraphEdge *> * lcEdges() {return & edges; };
    void removeEdge(GraphEdge * edge);
    void removeEdges();
 
@@ -51,6 +52,9 @@ private:
    QMenu * contextmenu_v {};
 
    QVector<GraphEdge *> edges;
+
+   //bool ft[2] {false,true};
+   //const bool * p_cursorFT {&ft[0]};
 
    QRectF vertexboundaryrect {QPointF(0.0,0.0), QSizeF(20.0,20.0)};
    QPen vertexcircumferencepen {Qt::black, 2};
