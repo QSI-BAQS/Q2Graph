@@ -34,7 +34,7 @@ public:
    int type() const override { return Type; }
 
    void addEdge(GraphEdge * edge);
-   const QVector<GraphEdge *> * lcEdges() {return & edges; };
+   const QVector<GraphEdge *> * lcEdges() const {return & edges; };
    void removeEdge(GraphEdge * edge);
    void removeEdges();
 

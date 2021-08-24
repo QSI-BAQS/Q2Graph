@@ -344,24 +344,97 @@ void GraphFrame::localComplementation() {
 
    // collect only the vertex at the cursor hotspot, 'upon click'
    QList<QGraphicsItem *> lc_vertex= selectedItems();
+
    // either operate on a GraphVertex object or, abort
    if(lc_vertex.isEmpty() || lc_vertex.first()->type() != GraphVertex::Type)
       return ;
+
+   // cast a 'QGraphicsItem *' as a 'GraphVertex *' so as to access GraphVertex
+   // members
+   GraphVertex * lcv= qgraphicsitem_cast<GraphVertex *>(lc_vertex.first());
+
+   // vertex X must have at least one (1) edge for LC: abort
+   if(lcv->lcEdges()->isEmpty()){
+      lcv->setSelected(false);
+      return ;
+   }
+
+   // if vertex X has one (1) edge, LC operation
+   if(lcv->lcEdges()->count() == 1){
+      lcv->removeEdges();
+      lcv->setSelected(false);
+   }
+   // if vertex X has > 1 edge, LC operation
    else {
-      QVector<GraphVertex *> neighbourvs {};
+      // container: neighbour vertex with one (1) edge, to vertex X
+      QVector<GraphVertex *> neighbourEQ1edge {};
+      // container: neighbour vertex with an edge to vertex X plus an edge to
+      // at least one other vertex
+      QVector<GraphVertex *> neighbourGT1edge {};
 
-      // cast a 'QGraphicsItem *' as a 'GraphVertex *' in order to access
-      // GraphVertex members
-      GraphVertex * lcv= qgraphicsitem_cast<GraphVertex *>(lc_vertex.first());
-
-      // capture the vertex 'at the other end' of the edge shared with vertex X
+      // capture the neighbour vertices of vertex X (i.e. the vertex 'at the
+      // opposite end' of any edge shared with vertex X); note the dereference
+      // operation on lcv->lcEdges()
       for (GraphEdge * e : *lcv->lcEdges()) {
-         if(e->p1v() != lcv)
-            neighbourvs.push_back(e->p2v());
-         else
-            neighbourvs.push_back(e->p1v());
+         // copy the GraphVertex * in order then to access the address of the
+         // underlying object
+         GraphVertex * foraddrofp1v= e->p1v();
+
+         // test whether pointed-to-objects are equivalent by comparing their
+         // addresses
+         if(foraddrofp1v != lcv){
+            if(e->p1v()->lcEdges()->count() == 1)
+               // opposite vertex has one (1) edge: sort to container
+               // neighbourEQ1edge
+               neighbourEQ1edge.push_back(e->p1v());
+            else
+               // opposite edge has >1 edges: sort to container
+               // neighbourGT1edge
+               neighbourGT1edge.push_back(e->p1v());
+         }
+         else {
+            if(e->p2v()->lcEdges()->count() == 1)
+               // opposite vertex has one (1) edge: sort to container
+               // neighbourEQ1edge
+               neighbourEQ1edge.push_back(e->p2v());
+            else
+               // opposite edge has >1 edges: sort to container
+               // neighbourGT1edge
+               neighbourGT1edge.push_back(e->p2v());
+         }
       }
-      qDebug() << "vertex X pos():" << lcv->pos() << "neighbourvs:" << neighbourvs.mid(0);
+//qDebug() << "vertex X pos():" << lcv->pos() << "neighbourEQ1edge:" << neighbourEQ1edge.mid(0);
+//qDebug() << "vertex X pos():" << lcv->pos() << "neighbourGT1edge:" << neighbourGT1edge.mid(0);
+
+      /*for (GraphVertex * p_nvx : neighbourEQ1edge) {
+         // recurse over neighbourEQ1edge, connecting each element to the other
+         // elements
+         return ;
+      }*/
+
+      // TO DO: recursive solution to exclude edge v2 -> v5
+      for (GraphVertex * p_nvx : neighbourGT1edge ) {
+         // IFF p_nvx connects to another neighbour of vertex X, delete the
+         // common edge
+         for (GraphEdge * e : *p_nvx->lcEdges()) {
+            // derive the GraphVertex * in order then to access the address of
+            // the underlying object
+            GraphVertex * fs4p1v= e->p1v();
+            GraphVertex * fs4p2v= e->p2v();
+
+            // this will delete edge v2 -> v5
+            if(fs4p1v != lcv && fs4p2v != lcv){
+               // Cf. deleteEdge above: remove edge + removeItem + delete operation
+               // remove the edge from 'edges' container of both vertices...
+               fs4p1v->removeEdge(e);
+               fs4p2v->removeEdge(e);
+               // back the edge out of GraphFrame...
+               removeItem(e);
+               // deallocate the memory
+               delete e;
+            }
+         }
+      }
    }
 }
 
