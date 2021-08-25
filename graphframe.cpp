@@ -160,7 +160,9 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
    // operation: X local Pauli measurement
    else if(clabel->text() == "X"){
-      /*functionality placeholder*/
+      /*LC v1 then LC one of v1's neighbours then (again) LC v1 then
+       * gf_deleteVertex(v1)
+      */
 
       // reset CURSOR state
       cursorState(false);
@@ -169,8 +171,33 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
    // operation: Y local Pauli measurement
    else if(clabel->text() == "Y"){
-      /*functionality placeholder*/
+/*
+      // collect the vertex at the cursor hotspot, 'upon click'
+      QList<QGraphicsItem *> lc_vertex= items(event->scenePos()
+                                            , Qt::ContainsItemShape);
 
+      // prevent a runtime exception caused by nothing being at the cursor
+      // hotspot, 'upon click'.  Either operate on a GraphVertex object or,
+      // abort
+      if(lc_vertex.isEmpty() || lc_vertex.first()->type() != GraphVertex::Type)
+         return ;
+
+      // cast a 'QGraphicsItem *' as a 'GraphVertex *' so as to access GraphVertex
+      // members
+      GraphVertex * lcv= qgraphicsitem_cast<GraphVertex *>(lc_vertex.first());
+
+      // vertex X must have >= 1 edge for LC: abort
+      if(lcv->lcEdges()->isEmpty()){
+         lcv->setSelected(false);
+         return ;
+      }
+
+      // 'DRY': pass to general LC function
+      gf_localComplementation(lcv);
+
+      // 'DRY': pass to general vertex delete function
+      gf_deleteVertex(lcv);
+*/
       // reset CURSOR state
       cursorState(false);
       clabel->clear();
@@ -184,36 +211,15 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
       // prevent a runtime exception caused by nothing being at the cursor
       // hotspot, 'upon click'.  Note, by not failing this gate condition,
       // element 'localvs.first()' must be a (Graph)vertex
-      if(localvs.isEmpty() || localvs.first()->type() != GraphVertex::Type){
+      if(localvs.isEmpty() || localvs.first()->type() != GraphVertex::Type)
          return ;
-      }
-      // Cf. deleteVertex(), below
-      else {
-         // cast a 'QGraphicsItem *' as a 'GraphVertex *' in order to access
-         // GraphVertex members
-         GraphVertex * v4fs= qgraphicsitem_cast<GraphVertex *>(localvs.first());
 
-         // remove any and all (Graph)edges connected to the vertex
-         v4fs->removeEdges();
+      // cast a 'QGraphicsItem *' as a 'GraphVertex *' in order to access
+      // GraphVertex members
+      GraphVertex * v4fs= qgraphicsitem_cast<GraphVertex *>(localvs.first());
 
-         // remove the vertex from QList 'vertices'
-         vertices.removeAll(v4fs);
-         // back the vertex out of GraphFrame...
-         removeItem(v4fs);
-         // deallocate the memory
-         delete v4fs;
-
-         // if there are any remaining vertices...
-         if(!vertices.isEmpty()){
-            unsigned int id {1};   // TO DO: mutable counter
-            // ... reset the id numbering of each vertex
-            for (GraphVertex * v : qAsConst(vertices)) {
-               v->setVertexID(id);
-               v->update();
-               id++;
-            }
-         }
-      }
+      // 'DRY': pass to general vertex delete function
+      gf_deleteVertex(v4fs);
 
       // reset CURSOR state
       cursorState(false);
@@ -309,62 +315,116 @@ void GraphFrame::setCursorLabel(QString tag) {
       clabel->show();
 };
 
-void GraphFrame::deleteEdge() {
+
+
+void GraphFrame::createMenus() {
+   edgemenu= new QMenu("edge menu");
+   edgemenu->addAction("Delete", this, [this](){
+      // collect only the edge at the cursor hotspot, 'upon click'
+      QList<QGraphicsItem *> del_edge= selectedItems();
+      // either first object of del_edge is type GraphEdge or, abort
+      if(del_edge.isEmpty() || del_edge.first()->type() != GraphEdge::Type)
+         return ;
+
+      // cast a QGraphicsItem * as a GraphEdge * in order to access GraphEdge
+      // methods
+      GraphEdge * e4fs= qgraphicsitem_cast<GraphEdge *>(del_edge.first());
+      // 'DRY': pass to general edge delete function
+      gf_deleteEdge(e4fs);
+   });
+   edgemenu->addAction("-- place 2 --");
+
+   vertexmenu= new QMenu("vertex menu");
+   vertexmenu->addAction("Delete", this, [this](){
+      // collect only the vertex at the cursor hotspot, 'upon click'
+      QList<QGraphicsItem *> del_vertex= selectedItems();
+      // either operate on a GraphVertex object or, abort
+      if(del_vertex.isEmpty() || del_vertex.first()->type() != GraphVertex::Type)
+         return ;
+      // cast a 'QGraphicsItem *' as a 'GraphVertex *' in order to access
+      // GraphVertex members
+      GraphVertex * v4fs= qgraphicsitem_cast<GraphVertex *>(del_vertex.first());
+      // 'DRY': pass to general vertex delete function
+      gf_deleteVertex(v4fs);
+   });
+   // retain this as a 'what if' function? (to do) Undo function should leave a
+   // right-click LC as a viable option
+   vertexmenu->addAction("Local_Complementation", this, [this](){
+      // collect only the vertex at the cursor hotspot, 'upon click'
+      QList<QGraphicsItem *> lc_vertex= selectedItems();
+      // either operate on a GraphVertex object or, abort
+      if(lc_vertex.isEmpty() || lc_vertex.first()->type() != GraphVertex::Type)
+         return ;
+      // cast a 'QGraphicsItem *' as a 'GraphVertex *' so as to access GraphVertex
+      // members
+      GraphVertex * lcv= qgraphicsitem_cast<GraphVertex *>(lc_vertex.first());
+      // vertex X must have >= 1 edge for LC: abort
+      if(lcv->lcEdges()->isEmpty()){
+         lcv->setSelected(false);
+         return ;
+      }
+      // 'DRY': pass to general LC function
+      gf_localComplementation(lcv); });
+   vertexmenu->addAction("-- place 3 --");
+}
+
+void GraphFrame::gf_deleteEdge(GraphEdge * e4fs) {
    // delete a (Graph)edge
    // pre-condition: target object is type, GraphEdge
    // post-condition: target (Graph)edge is removed, any formerly connected
    //   (Graph)vertices are unaffected
 
-   // collect only the edge at the cursor hotspot, 'upon click'
-   QList<QGraphicsItem *> del_edge= selectedItems();
-   // either first object of del_edge is type GraphEdge or, abort
-   if(del_edge.isEmpty() || del_edge.first()->type() != GraphEdge::Type){
-      return ;
-   }
-   else {
-      // cast a QGraphicsItem * as a GraphEdge * in order to access GraphEdge
-      // methods
-      GraphEdge * e4fs= qgraphicsitem_cast<GraphEdge *>(del_edge.first());
+   // remove the edge from 'edges' container of both vertices...
+   e4fs->p1v()->removeEdge(e4fs);
+   e4fs->p2v()->removeEdge(e4fs);
 
-      // remove the edge from 'edges' container of both vertices...
-      e4fs->p1v()->removeEdge(e4fs);
-      e4fs->p2v()->removeEdge(e4fs);
-      // back the edge out of GraphFrame...
-      removeItem(e4fs);
-      // deallocate the memory
-      delete e4fs;
+   // back the edge out of GraphFrame...
+   removeItem(e4fs);
+   // deallocate the memory
+   delete e4fs;
+}
+
+void GraphFrame::gf_deleteVertex(GraphVertex *v4fs) {
+   // delete a (Graph)vertex and its connected (Graph)edges
+   // pre-condition: target object is type, GraphVertex
+   // post-condition: target (Graph)vertex and all associated (Graph)edges are
+   //   removed; the ID of each remaining vertex is reset
+
+   // remove any and all (Graph)edges connected to the vertex
+   v4fs->removeEdges();
+
+   // remove the vertex from QList 'vertices'
+   vertices.removeAll(v4fs);
+   // back the vertex out of GraphFrame...
+   removeItem(v4fs);
+   // deallocate the memory
+   delete v4fs;
+
+   // if there are any remaining vertices...
+   if(!vertices.isEmpty()){
+      unsigned int id {1};   // TO DO: mutable counter; vertices.size()?
+
+      // ... reset the id numbering of each vertex
+      for (GraphVertex * v : qAsConst(vertices)) {
+         v->setVertexID(id);
+         v->update();
+         id++;
+      }
    }
 }
 
-void GraphFrame::localComplementation() {
-   // LC applied to vertex X: all vertices of X's neighbourhood not joined by
-   // a (Graph)edge to gain an edge and conversely
+void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
+   // LC applied to (focus) vertex X: all vertices of X's neighbourhood not
+   // joined by a (Graph)edge to gain an edge and conversely
    // pre-condition: target object is type, GraphVertex
    // post-condition: edges are reconfigured to LC status
 
-   // collect only the vertex at the cursor hotspot, 'upon click'
-   QList<QGraphicsItem *> lc_vertex= selectedItems();
-
-   // either operate on a GraphVertex object or, abort
-   if(lc_vertex.isEmpty() || lc_vertex.first()->type() != GraphVertex::Type)
-      return ;
-
-   // cast a 'QGraphicsItem *' as a 'GraphVertex *' so as to access GraphVertex
-   // members
-   GraphVertex * lcv= qgraphicsitem_cast<GraphVertex *>(lc_vertex.first());
-
-   // vertex X must have at least one (1) edge for LC: abort
-   if(lcv->lcEdges()->isEmpty()){
-      lcv->setSelected(false);
-      return ;
-   }
-
-   // if vertex X has one (1) edge, LC operation
+   // LC operation: vertex X has one (1) edge
    if(lcv->lcEdges()->count() == 1){
       lcv->removeEdges();
       lcv->setSelected(false);
    }
-   // if vertex X has > 1 edge, LC operation
+   // LC operation: vertex X has > 1 edge
    else {
       // container: neighbour vertex with one (1) edge, to vertex X
       QVector<GraphVertex *> neighbourEQ1edge {};
@@ -412,7 +472,6 @@ void GraphFrame::localComplementation() {
          return ;
       }*/
 
-      // TO DO: recursive solution to exclude edge v2 -> v5
       for (GraphVertex * p_nvx : neighbourGT1edge ) {
          // IFF p_nvx connects to another neighbour of vertex X, delete the
          // common edge
@@ -422,70 +481,28 @@ void GraphFrame::localComplementation() {
             GraphVertex * fs4p1v= e->p1v();
             GraphVertex * fs4p2v= e->p2v();
 
-            // this will delete edge v2 -> v5
-            if(fs4p1v != lcv && fs4p2v != lcv){
-               // Cf. deleteEdge above: remove edge + removeItem + delete operation
-               // remove the edge from 'edges' container of both vertices...
+            // delete only neighbour's (existing) edge
+            // ignore the corner case: the edge connecting a neighbour vertex
+            // to a non-neighbour vertex
+            if((!neighbourGT1edge.contains(fs4p1v) && fs4p1v != lcv)
+                  || (!neighbourGT1edge.contains(fs4p2v) && fs4p2v != lcv))
+               /* TO DO: find any acceptable alternative to this nasty hack;
+                * unfortunately,
+                *  'if((neighbourGT1edge.contains(fs4p1v) && fs4p1v != lcv)
+                *     || (neighbourGT1edge.contains(fs4p2v) && fs4p2v != lcv))'
+                * (and no else if) causes a fatal runtime error
+               */
+               ;
+            // delete any edge connecting two neighbours of vertex X
+            else if(fs4p1v != lcv && fs4p2v != lcv){
                fs4p1v->removeEdge(e);
                fs4p2v->removeEdge(e);
-               // back the edge out of GraphFrame...
                removeItem(e);
-               // deallocate the memory
                delete e;
             }
          }
       }
    }
-}
-
-void GraphFrame::createMenus() {
-   edgemenu= new QMenu("edge menu");
-   edgemenu->addAction("Delete", this, [this](){ deleteEdge(); });
-   edgemenu->addAction("-- place 2 --");
-
-   vertexmenu= new QMenu("vertex menu");
-   vertexmenu->addAction("Delete", this, [this](){ deleteVertex(); });
-   vertexmenu->addAction("Local_Complementation", this
-                         , [this](){ localComplementation(); });
-   vertexmenu->addAction("-- place 3 --");
-}
-
-void GraphFrame::deleteVertex() {
-   // delete a (Graph)vertex and its connected (Graph)edges
-   // pre-condition: target object is type, GraphVertex
-   // post-condition: target (Graph)vertex and all associated (Graph)edges are
-   //   removed; the ID of each remaining vertex is reset
-
-   // collect only the vertex at the cursor hotspot, 'upon click'
-   QList<QGraphicsItem *> del_vertex= selectedItems();
-   // either operate on a GraphVertex object or, abort
-   if(del_vertex.isEmpty() || del_vertex.first()->type() != GraphVertex::Type)
-      return ;
-   else {
-      // cast a 'QGraphicsItem *' as a 'GraphVertex *' in order to access
-      // GraphVertex members
-      GraphVertex * v4fs= qgraphicsitem_cast<GraphVertex *>(del_vertex.first());
-
-      // remove any and all (Graph)edges connected to the vertex
-      v4fs->removeEdges();
-
-      // remove the vertex from QList 'vertices'
-      vertices.removeAll(v4fs);
-      // back the vertex out of GraphFrame...
-      removeItem(v4fs);
-      // deallocate the memory
-      delete v4fs;
-
-      // if there are any remaining vertices...
-      if(!vertices.isEmpty()){
-         unsigned int id {1};   // TO DO: mutable counter
-         // ... reset the id numbering of each vertex
-         for (GraphVertex * v : qAsConst(vertices)) {
-            v->setVertexID(id);
-            v->update();
-            id++;
-         }
-      }
-   }
+   lcv->setSelected(false);
 }
 

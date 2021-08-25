@@ -43,13 +43,11 @@ private:
    void cursorState(bool setTF);
    void setCursorLabel(QString tag);
 
-   void deleteEdge();
-
-   void localComplementation();
-
    void createMenus();
 
-   void deleteVertex();
+   void gf_deleteEdge(GraphEdge * e4fs);
+   void gf_deleteVertex(GraphVertex * v4fs);
+   void gf_localComplementation(GraphVertex * lcv);
 };
 
 #endif // GRAPHFRAME_H
