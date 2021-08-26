@@ -2,6 +2,7 @@
 
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
+#include <algorithm>
 
 
 // public:
@@ -426,11 +427,8 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
    }
    // LC operation: vertex X has > 1 edge
    else {
-      // container: neighbour vertex with one (1) edge, to vertex X
-      QVector<GraphVertex *> neighbourEQ1edge {};
-      // container: neighbour vertex with an edge to vertex X plus an edge to
-      // at least one other vertex
-      QVector<GraphVertex *> neighbourGT1edge {};
+      // container: neighbour vertices of vertex X
+      QVector<GraphVertex *> neighbourvs {};
 
       // capture the neighbour vertices of vertex X (i.e. the vertex 'at the
       // opposite end' of any edge shared with vertex X); note the dereference
@@ -439,70 +437,57 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
          // copy the GraphVertex * in order then to access the address of the
          // underlying object
          GraphVertex * foraddrofp1v= e->p1v();
-
          // test whether pointed-to-objects are equivalent by comparing their
          // addresses
-         if(foraddrofp1v != lcv){
-            if(e->p1v()->lcEdges()->count() == 1)
-               // opposite vertex has one (1) edge: sort to container
-               // neighbourEQ1edge
-               neighbourEQ1edge.push_back(e->p1v());
-            else
-               // opposite edge has >1 edges: sort to container
-               // neighbourGT1edge
-               neighbourGT1edge.push_back(e->p1v());
-         }
-         else {
-            if(e->p2v()->lcEdges()->count() == 1)
-               // opposite vertex has one (1) edge: sort to container
-               // neighbourEQ1edge
-               neighbourEQ1edge.push_back(e->p2v());
-            else
-               // opposite edge has >1 edges: sort to container
-               // neighbourGT1edge
-               neighbourGT1edge.push_back(e->p2v());
-         }
+         if(foraddrofp1v != lcv)
+            neighbourvs.push_back(e->p1v());
+         else
+            neighbourvs.push_back(e->p2v());
       }
-//qDebug() << "vertex X pos():" << lcv->pos() << "neighbourEQ1edge:" << neighbourEQ1edge.mid(0);
-//qDebug() << "vertex X pos():" << lcv->pos() << "neighbourGT1edge:" << neighbourGT1edge.mid(0);
+//qDebug() << "vertex X pos():" << lcv->pos() << "neighbourvs:" << neighbourvs.mid(0);
+      // collect any neighbour vertices for (edge) ADD operation
+      QVector<QPair<GraphVertex *, GraphVertex *>> a_vertices {};
+      // collect any edges of neighbour vertices for DELETE operation
+      QVector<GraphEdge *> d_edges {};
 
-      /*for (GraphVertex * p_nvx : neighbourEQ1edge) {
-         // recurse over neighbourEQ1edge, connecting each element to the other
-         // elements
-         return ;
-      }*/
-
-      for (GraphVertex * p_nvx : neighbourGT1edge ) {
-         // IFF p_nvx connects to another neighbour of vertex X, delete the
-         // common edge
+      // assemble edge collections: ADD and DELETE
+      for (GraphVertex * p_nvx : neighbourvs) {
+         // edge collection: ADD
+         QVector<GraphVertex *> add_neighbour= neighbourvs;
+         add_neighbour.removeAll(p_nvx);
+         for (GraphVertex * addv : add_neighbour) {
+            QRectF rect {p_nvx->pos(), addv->pos()};
+            if(items(rect).isEmpty()){
+               QPair adds {p_nvx, addv};
+               a_vertices.push_back(adds);
+            }
+         }
+         // edge collection: DELETE
          for (GraphEdge * e : *p_nvx->lcEdges()) {
             // derive the GraphVertex * in order then to access the address of
             // the underlying object
-            GraphVertex * fs4p1v= e->p1v();
-            GraphVertex * fs4p2v= e->p2v();
+            GraphVertex * delp1v= e->p1v();
+            GraphVertex * delp2v= e->p2v();
 
-            // delete only neighbour's (existing) edge
-            // ignore the corner case: the edge connecting a neighbour vertex
-            // to a non-neighbour vertex
-            if((!neighbourGT1edge.contains(fs4p1v) && fs4p1v != lcv)
-                  || (!neighbourGT1edge.contains(fs4p2v) && fs4p2v != lcv))
-               /* TO DO: find any acceptable alternative to this nasty hack;
-                * unfortunately,
-                *  'if((neighbourGT1edge.contains(fs4p1v) && fs4p1v != lcv)
-                *     || (neighbourGT1edge.contains(fs4p2v) && fs4p2v != lcv))'
-                * (and no else if) causes a fatal runtime error
-               */
-               ;
-            // delete any edge connecting two neighbours of vertex X
-            else if(fs4p1v != lcv && fs4p2v != lcv){
-               fs4p1v->removeEdge(e);
-               fs4p2v->removeEdge(e);
-               removeItem(e);
-               delete e;
+            // DELETE antecedent 1: (both vertices are neighbours of vertex X)
+            if((neighbourvs.contains(delp1v)
+                && neighbourvs.contains(delp2v))
+                  // ^ DELETE antecedent 2: (neither vertex is vertex X)
+                  && (delp1v != lcv && delp2v != lcv)){
+               // consequent: collect in d_edges any edge which connects two
+               // neighbours of vertex X
+               d_edges.push_back(e);
             }
+         }
+         // IFF p_nvx has no connecting edge to another neighbour of vertex X,
+         // add a common edge
+
+         // IFF p_nvx has a connecting edge to another neighbour of vertex X,
+         // delete the common edge
+         for (GraphEdge * e : d_edges ) {
+            gf_deleteEdge(e);
          }
       }
    }
-   lcv->setSelected(false);
 }
 
