@@ -2,7 +2,6 @@
 
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
-#include <algorithm>
 
 
 // public:
@@ -423,7 +422,7 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
    // LC operation: vertex X has one (1) edge
    if(lcv->lcEdges()->count() == 1){
       lcv->removeEdges();
-      lcv->setSelected(false);
+      //lcv->setSelected(false);
    }
    // LC operation: vertex X has > 1 edge
    else {
@@ -445,23 +444,27 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
             neighbourvs.push_back(e->p2v());
       }
 //qDebug() << "vertex X pos():" << lcv->pos() << "neighbourvs:" << neighbourvs.mid(0);
-      // collect any neighbour vertices for (edge) ADD operation
-      QVector<QPair<GraphVertex *, GraphVertex *>> a_vertices {};
-      // collect any edges of neighbour vertices for DELETE operation
-      QVector<GraphEdge *> d_edges {};
+      // Set: any neighbour vertices for (edge) ADD operation.  Set will
+      // enforce uniqueness of Pairs in the iterative ADD collecting
+      QSet<QPair<GraphVertex *, GraphVertex *>> a_vertices {};
+      // Vector: any edges of neighbour vertices for DELETE operation
+/*      QVector<GraphEdge *> d_edges {};*/
 
       // assemble edge collections: ADD and DELETE
       for (GraphVertex * p_nvx : neighbourvs) {
          // edge collection: ADD
-         QVector<GraphVertex *> add_neighbour= neighbourvs;
-         add_neighbour.removeAll(p_nvx);
-         for (GraphVertex * addv : add_neighbour) {
-            QRectF rect {p_nvx->pos(), addv->pos()};
-            if(items(rect).isEmpty()){
-               QPair adds {p_nvx, addv};
-               a_vertices.push_back(adds);
+         QVector<GraphVertex *> add_neighbourvs {};
+         add_neighbourvs= neighbourvs;
+         add_neighbourvs.removeAll(p_nvx);
+         for (GraphVertex * p_other_nvx : qAsConst(add_neighbourvs) ) {
+            GraphEdge * marker= new GraphEdge(p_nvx, p_other_nvx, edgemenu);
+            for (GraphEdge * e : *p_other_nvx->lcEdges()) {
+               if(marker != e)
+                  a_vertices.insert(QPair(p_nvx, p_other_nvx));
             }
+            gf_deleteEdge(marker);
          }
+qDebug() << "a_vertices:" << a_vertices.values();/*
          // edge collection: DELETE
          for (GraphEdge * e : *p_nvx->lcEdges()) {
             // derive the GraphVertex * in order then to access the address of
@@ -486,7 +489,7 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
          // delete the common edge
          for (GraphEdge * e : d_edges ) {
             gf_deleteEdge(e);
-         }
+         }*/
       }
    }
 }
