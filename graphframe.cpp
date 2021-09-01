@@ -444,28 +444,116 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
             neighbourvs.push_back(e->p2v());
       }
 //qDebug() << "vertex X pos():" << lcv->pos() << "neighbourvs:" << neighbourvs.mid(0);
-      // Set: any neighbour vertices for (edge) ADD operation.  Set will
-      // enforce uniqueness of Pairs in the iterative ADD collecting
-      QSet<QPair<GraphVertex *, GraphVertex *>> a_vertices {};
+      // Vector: any neighbour vertices for (edge) ADD operation
+      QVector<QPair<GraphVertex *, GraphVertex *>> a_vertices {};
       // Vector: any edges of neighbour vertices for DELETE operation
-/*      QVector<GraphEdge *> d_edges {};*/
+//      QVector<GraphEdge *> d_edges {};
 
       // assemble edge collections: ADD and DELETE
       for (GraphVertex * p_nvx : neighbourvs) {
+
          // edge collection: ADD
          QVector<GraphVertex *> add_neighbourvs {};
          add_neighbourvs= neighbourvs;
+         // create copy of neighbourvs less the in-scope vertex, p_nvx
          add_neighbourvs.removeAll(p_nvx);
+//qDebug() << "add_neighbourvs:" << add_neighbourvs.count();
          for (GraphVertex * p_other_nvx : qAsConst(add_neighbourvs) ) {
-            GraphEdge * marker= new GraphEdge(p_nvx, p_other_nvx, edgemenu);
+            // iterate over the (Graph)edges connected to the neighbour vertex
+            // of in-scope vertex, p_nvx
             for (GraphEdge * e : *p_other_nvx->lcEdges()) {
-               if(marker != e)
-                  a_vertices.insert(QPair(p_nvx, p_other_nvx));
+               GraphVertex * other_v_1= e->p1v();
+               GraphVertex * other_v_2= e->p2v();
+
+               // logic: p_other_nvx must be other_v_1 or other_v_2 hence lcv/
+               // ADD-vertex must be other_v_2 or other_v_1 thus, eliminate lcv
+               // to get the target ADD-vertex
+
+               // evaluate only those mutual neighbour vertices of (LC vertex),
+               // lcv not connected by edge to p_nvx
+               if((p_nvx != other_v_1 && p_nvx != other_v_2)
+                     && (lcv != other_v_1 && lcv != other_v_2)){
+                  // check: edge between p_nvx and target ADD-vertex
+                  // represented as p1v <-> p2v is not missed in an iteration
+                  // coded to fire at p2v <-> p1v, or conversely
+                  //    state: target ADD-vertex == other_v_1 ?
+                  if(p_other_nvx == other_v_1){
+                     unsigned int counter {0};
+                     // check: p_nvx is not already connected to target ADD-
+                     // vertex
+                     for (GraphEdge * e : *p_nvx->lcEdges()) {
+                        GraphVertex * isp_nvxp1v= e->p1v();
+                        GraphVertex * isp_nvxp2v= e->p2v();
+
+                        if(p_other_nvx != isp_nvxp1v && p_other_nvx != isp_nvxp2v)
+                           counter += 1;
+                     }
+
+                     // fires IFF there is no existing edge connecting p_nvx to
+                     // target ADD-vertex, p_other_nvx
+                     if(counter == (unsigned int) p_nvx->lcEdges()->count()){
+                        QPair<GraphVertex *, GraphVertex *> add;
+                        add.first= p_nvx;
+                        add.second= p_other_nvx;
+
+                        // collect add in a_vertices...
+                        if(a_vertices.isEmpty())
+                           a_vertices.push_back(add);
+                        // but do enforce uniqueness of a_vertices elements
+                        else {
+                           QPair<GraphVertex *, GraphVertex *> addflip;
+                           addflip.first= p_other_nvx;
+                           addflip.second= p_nvx;
+
+                           if(a_vertices.contains(add) || a_vertices.contains(addflip))
+                              return ;
+                           else
+                              a_vertices.push_back(add);
+                           }
+                        }
+                  }
+                  // state: target ADD-vertex == other_v_2 ?
+                  else if(p_other_nvx == other_v_2){
+                     unsigned int counterp {0};
+                     // check: p_nvx is not already connected to target ADD-
+                     // vertex, p_other_nvx
+                     for (GraphEdge * e : *p_nvx->lcEdges()) {
+                        GraphVertex * isp_nvxp1v_p= e->p1v();
+                        GraphVertex * isp_nvxp2v_p= e->p2v();
+
+                        if(p_other_nvx != isp_nvxp1v_p
+                              && p_other_nvx != isp_nvxp2v_p)
+                           counterp += 1;
+                     }
+
+                     // fires IFF there is no existing edge connecting p_nvx to
+                     // target ADD-vertex, p_other_nvx
+                     if(counterp == (unsigned int) p_nvx->lcEdges()->count()){
+                        QPair<GraphVertex *, GraphVertex *> add;
+                        add.first= p_nvx;
+                        add.second= p_other_nvx;
+
+                        // collect add in a_vertices...
+                        if(a_vertices.isEmpty())
+                           a_vertices.push_back(add);
+                        // but enforce uniqueness of a_vertices elements
+                        else {
+                           QPair<GraphVertex *, GraphVertex *> addflip;
+                           addflip.first= p_other_nvx;
+                           addflip.second= p_nvx;
+
+                           if(a_vertices.contains(add) || a_vertices.contains(addflip))
+                              return ;
+                           else
+                              a_vertices.push_back(add);
+                           }
+                        }
+                  }
+               }
             }
-            gf_deleteEdge(marker);
          }
-qDebug() << "a_vertices:" << a_vertices.values();/*
-         // edge collection: DELETE
+qDebug() << "p_nvx->pos():" << p_nvx->pos() << "a_vertices:" << a_vertices.mid(0);
+/*         // edge collection: DELETE
          for (GraphEdge * e : *p_nvx->lcEdges()) {
             // derive the GraphVertex * in order then to access the address of
             // the underlying object
