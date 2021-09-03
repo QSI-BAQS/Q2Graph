@@ -425,7 +425,6 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
    // LC operation: vertex X has one (1) edge
    if(lcv->lcEdges()->count() == 1){
       lcv->removeEdges();
-
    }
    // LC operation: vertex X has > 1 edge
    else {
@@ -474,26 +473,16 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
 
       // edge collection: DELETE
       for (QPair<QPointF, QPointF> d : all_vertex_pos) {
+         QList<QGraphicsItem *> l1= items(d.first);
+         QList<QGraphicsItem *> l2= items(d.second);
 
+         GraphVertex * v1= qgraphicsitem_cast<GraphVertex *>(l1.first());
+         GraphVertex * v2= qgraphicsitem_cast<GraphVertex *>(l2.first());
+
+         if(items().contains(GraphEdge(v1,v2,edgemenu)))
       }
 
-/*         // edge collection: DELETE
-         for (GraphEdge * e : *p_nvx->lcEdges()) {
-            // derive the GraphVertex * in order then to access the address of
-            // the underlying object
-            GraphVertex * delp1v= e->p1v();
-            GraphVertex * delp2v= e->p2v();
-
-            // DELETE antecedent 1: (both vertices are neighbours of vertex X)
-            if((neighbourvs.contains(delp1v)
-                && neighbourvs.contains(delp2v))
-                  // ^ DELETE antecedent 2: (neither vertex is vertex X)
-                  && (delp1v != lcv && delp2v != lcv)){
-               // consequent: collect in d_edges any edge which connects two
-               // neighbours of vertex X
-               d_edges.push_back(e);
-            }
-         }
+/*
          // IFF p_nvx has no connecting edge to another neighbour of vertex X,
          // add a common edge
 
