@@ -471,46 +471,39 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
       // Vector: any neighbouring vertices for (edge) ADD operation
       QVector<QPair<GraphVertex *, GraphVertex *>> a_vertices {};
 
-//QVector<QPair<QPointF, QPointF>> look12v;
+      // for each neighbour vertex...
+      for(GraphVertex * p_nvx : qAsConst(neighbourvs)) {
+         // ... identify the edges it shares with other neighbour vertices
+         for (GraphEdge * e : *p_nvx->lcEdges()) {
+            GraphVertex * p1v= e->p1v();
+            GraphVertex * p2v= e->p2v();
+            // by neighbour vertex, collect any ADD edges or DELETE edges
+            for (QPair<QPointF, QPointF> pospair : all_vertex_pos) {
+               // capture an existing edge between neighbours in d_edges
+               if((pospair.first == p1v->pos() && pospair.second == p2v->pos())
+                     || (pospair.first == p2v->pos()
+                         && pospair.second == p1v->pos())){
+                     if(!d_edges.contains(e))
+                        d_edges.push_back(e);
+               }
+               // derive any edge to a neighbour vertex that does not exist
+               else if(pospair.first != lcv->pos()
+                       && pospair.second != lcv->pos()){
+                  QPair<GraphVertex *, GraphVertex *> adde;
+                  //adde.first= ;
+                  //adde.second= ;
 
-      // by neighbour vertex, collect any ADD edges or DELETE edges
-      for (QPair<QPointF, QPointF> d : all_vertex_pos) {
-         // for each neighbour vertex...
-         for(GraphVertex * p_nvx : qAsConst(neighbourvs)) {
-            // ... identify the edges it shares with other neighbour vertices
-            // and derive any edge to a neighbour vertex that does not exist
-            for (GraphEdge * e : *p_nvx->lcEdges()) {
-             GraphVertex * p1v= e->p1v();
-             GraphVertex * p2v= e->p2v();
-/*
-QPointF look1= p1v->pos();
-QPointF look2= p2v->pos();
-QPair<QPointF, QPointF> look1d1;
-look1d1.first= look1;
-look1d1.second= d.first;
-look12v.push_back(look1d1);
-QPair<QPointF, QPointF> look2d2;
-look2d2.first= look2;
-look2d2.second= d.second;
-look12v.push_back(look2d2);*/
-             // capture an existing edge between neighbours in d_edges
-             if((d.first == p1v->pos() && d.second == p2v->pos())
-                   && !d_edges.contains(e))
-                   d_edges.push_back(e);
-             // add any 'no match' to a_vertices
-             else if ((d.first != p1v->pos() && d.second != p2v->pos())
-                      && (lcv != p1v && lcv != p2v)){
-                QPair<GraphVertex *, GraphVertex *> adde;
-                adde.first= p1v;
-                adde.second= p2v;
-                if(!a_vertices.contains(adde))
-                   a_vertices.push_back(adde);
-             }
+                  QPair<GraphVertex *, GraphVertex *> flipadde;
+                  //flipadde.first= adde.second;
+                  //flipadde.second= adde.first;
+                  if(!a_vertices.contains(adde) || !a_vertices.contains(flipadde))
+                     a_vertices.push_back(adde);
+               }
             }
          }
       }
-//qDebug() << "lcv->pos():" << lcv->pos() << " d_edges:" << d_edges.mid(0) << " a_vertices:" << a_vertices.mid(0)/* << "look12v:" << look12v.mid(0)*/;
-
+qDebug() << "lcv->pos():" << lcv->pos() << " d_edges:" << d_edges.mid(0) << " a_vertices:" << a_vertices.mid(0)/* << "look12v:" << look12v.mid(0)*/;
+/*
       // IFF p_nvx has no connecting edge to another neighbour of vertex X,
       // add a common edge
       for (QPair<GraphVertex *, GraphVertex *> z : a_vertices) {
@@ -523,13 +516,15 @@ look12v.push_back(look2d2);*/
          // add a QGraphicsLineItem (GraphEdge) to the GraphFrame
          // (QGraphicsScene) container
          addItem(e);
-      }
-/*
+      }*/
+
       // IFF p_nvx has a connecting edge to another neighbour of vertex X,
       // delete the common edge
       for (GraphEdge * e : d_edges ) {
+         e->isSelected();
          gf_deleteEdge(e);
-      }*/
-      }
+
+      }  
+   }
 }
 
