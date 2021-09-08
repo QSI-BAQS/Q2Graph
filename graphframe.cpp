@@ -140,7 +140,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
       // add a QGraphicsItem (GraphVertex) to the GraphFrame
       // (QGraphicsScene) container
-//qDebug() << "vertex added:" << v << "type():" << v->type();   
+//qDebug() << "vertex added:" << v << "type():" << v->type();
       addItem(v);
 
       // move rendered vertex from beneath the cursor
