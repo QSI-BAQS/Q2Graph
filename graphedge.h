@@ -19,14 +19,14 @@ QT_END_NAMESPACE
 class GraphEdge : public QGraphicsLineItem
 {
 public:
-   GraphEdge(GraphVertex * p1v, GraphVertex * p2v, QMenu * contextmenu
+   GraphEdge(GraphVertex *, GraphVertex *, QMenu *
              , QGraphicsItem * parent= nullptr);
    ~GraphEdge();
 
    // as with GraphVertex: to establish instance ID
    enum { Type= UserType + 4 };
 
-   void resetColour(const QColor & colour);
+   void resetColour(const QColor &);
    void resetEdgePosition();
 
    GraphVertex * p1v() const { return p1vertex; }
@@ -35,7 +35,7 @@ public:
    int type() const override { return Type; }
 
 protected:
-   void contextMenuEvent(QGraphicsSceneContextMenuEvent * event) override;
+   void contextMenuEvent(QGraphicsSceneContextMenuEvent *) override;
 
 private:
    QMenu * contextmenu_e {};

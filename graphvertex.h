@@ -21,7 +21,7 @@ QT_END_NAMESPACE
 class GraphVertex : public QGraphicsEllipseItem
 {
 public:
-   GraphVertex(QMenu * contextmenu, QGraphicsItem * parent= nullptr);
+   GraphVertex(QMenu *, QGraphicsItem * parent= nullptr);
    // resolve compile error 'undefined reference to XXX vtable', see: https://
    // stackoverflow.com/questions/14010922/qt-undefined-reference-to-vtable
    ~GraphVertex();
@@ -33,28 +33,24 @@ public:
    QRectF boundingRect() const override { return vertexboundaryrect; };
    int type() const override { return Type; }
 
-   void addEdge(GraphEdge * edge);
+   void addEdge(GraphEdge *);
    const QVector<GraphEdge *> * lcEdges() const {return & edges; };
-   void removeEdge(GraphEdge * edge);
+   void removeEdge(GraphEdge *);
    void removeEdges();
 
-   void resetColour(const QColor & colour);
-   void setVertexID(unsigned int vscount);
+   void resetColour(const QColor &);
+   void setVertexID(unsigned int);
 
 protected:
-   void contextMenuEvent(QGraphicsSceneContextMenuEvent * event) override;
-   QVariant itemChange(GraphicsItemChange change
-                       , const QVariant & value) override;
-   void paint(QPainter * painter, const QStyleOptionGraphicsItem * option
+   void contextMenuEvent(QGraphicsSceneContextMenuEvent *) override;
+   QVariant itemChange(GraphicsItemChange, const QVariant &) override;
+   void paint(QPainter *, const QStyleOptionGraphicsItem *
               , QWidget * widget= nullptr) override;
 
 private:
    QMenu * contextmenu_v {};
 
    QVector<GraphEdge *> edges;
-
-   //bool ft[2] {false,true};
-   //const bool * p_cursorFT {&ft[0]};
 
    QRectF vertexboundaryrect {QPointF(0.0,0.0), QSizeF(20.0,20.0)};
    QPen vertexcircumferencepen {Qt::black, 2};

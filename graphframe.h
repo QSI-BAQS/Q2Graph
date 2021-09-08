@@ -22,14 +22,14 @@ class GraphFrame : public QGraphicsScene
    Q_OBJECT
 
 public:
-   explicit GraphFrame(QWidget * parent = nullptr);
+   explicit GraphFrame(QWidget * parent= nullptr);
    ~GraphFrame();
 
 protected:
-   void keyPressEvent(QKeyEvent * event) override;
-   void mouseMoveEvent(QGraphicsSceneMouseEvent * event) override;
-   void mousePressEvent(QGraphicsSceneMouseEvent * event) override;
-   void mouseReleaseEvent(QGraphicsSceneMouseEvent * event) override;
+   void keyPressEvent(QKeyEvent *) override;
+   void mouseMoveEvent(QGraphicsSceneMouseEvent *) override;
+   void mousePressEvent(QGraphicsSceneMouseEvent *) override;
+   void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override;
 
 private:
    bool ft[2] {false,true};
@@ -40,14 +40,14 @@ private:
    const bool * p_cursorFT {&ft[0]};
    QList<GraphVertex *> vertices {};
 
-   void cursorState(bool setTF);
-   void setCursorLabel(QString tag);
+   void cursorState(bool);
+   void setCursorLabel(QString);
 
    void createMenus();
 
-   void gf_deleteEdge(GraphEdge * e4fs);
-   void gf_deleteVertex(GraphVertex * v4fs);
-   void gf_localComplementation(GraphVertex * lcv);
+   void gf_deleteEdge(GraphEdge *);
+   void gf_deleteVertex(GraphVertex *);
+   void gf_localComplementation(GraphVertex *);
 };
 
 #endif // GRAPHFRAME_H

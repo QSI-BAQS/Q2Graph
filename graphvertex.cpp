@@ -25,7 +25,6 @@ GraphVertex::~GraphVertex() {}
 
 
 void GraphVertex::addEdge(GraphEdge * edge) {
-//qDebug() << "edge added:" << edge << "type():" << edge->type();
    edges.push_back(edge);
 };
 
@@ -56,8 +55,7 @@ void GraphVertex::resetColour(const QColor & colour) {
 }
 
 void GraphVertex::setVertexID(unsigned int vscount) {
-//qDebug() << "vscount + 1 =" << vscount + 1;
-   vertexid= vscount/* + 1*/;
+   vertexid= vscount;
 }
 
 // protected:
