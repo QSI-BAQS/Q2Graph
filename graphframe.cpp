@@ -512,34 +512,40 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
                      a_vertices.push_back(adde);
                }
             }
-            if(e->p1v() == a_vertices.last().first
-                  || e->p1v() == a_vertices.last().second
-                  || e->p2v() == a_vertices.last().first
-                  || e->p2v() == a_vertices.last().second)
-               a_vertices.pop_back();
+            if(!a_vertices.isEmpty()){
+               if(e->p1v() == a_vertices.last().first
+                     || e->p1v() == a_vertices.last().second
+                     || e->p2v() == a_vertices.last().first
+                     || e->p2v() == a_vertices.last().second)
+                  a_vertices.pop_back();
+            }
          }
       }
-qDebug() << "lcv->pos():" << lcv->pos() << " d_edges:" << d_edges.mid(0) << " a_vertices:" << a_vertices.mid(0) << "a_vertices.count()" << a_vertices.count()/* << "look12v:" << look12v.mid(0)*/;
-/*
+//qDebug() << "lcv->pos():" << lcv->pos() << " d_edges:" << d_edges.mid(0) << " a_vertices:" << a_vertices.mid(0) << "a_vertices.count()" << a_vertices.count()/* << "look12v:" << look12v.mid(0)*/;
+
       // IFF p_nvx has no connecting edge to another neighbour of vertex X,
       // add a common edge
-      for (QPair<GraphVertex *, GraphVertex *> z : a_vertices) {
-         GraphEdge * e= new GraphEdge(z.first, z.second, edgemenu);
+      if(!a_vertices.isEmpty()){
+         for (QPair<GraphVertex *, GraphVertex *> z : a_vertices) {
+            GraphEdge * e= new GraphEdge(z.first, z.second, edgemenu);
 
-         // add the edge to (QVector) 'edges' of vertices p1 and p2
-         z.first->addEdge(e);
-         z.second->addEdge(e);
+            // add the edge to (QVector) 'edges' of vertices p1 and p2
+            z.first->addEdge(e);
+            z.second->addEdge(e);
 
-         // add a QGraphicsLineItem (GraphEdge) to the GraphFrame
-         // (QGraphicsScene) container
-         addItem(e);
+            // add a QGraphicsLineItem (GraphEdge) to the GraphFrame
+            // (QGraphicsScene) container
+            addItem(e);
+         }
       }
 
       // IFF p_nvx has a connecting edge to another neighbour of vertex X,
       // delete the common edge
-      for (GraphEdge * e : d_edges ) {
-         gf_deleteEdge(e);
-      }*/
+      if(!d_edges.isEmpty()){
+         for (GraphEdge * e : d_edges ) {
+            gf_deleteEdge(e);
+         }
+      }
    }
 }
 
