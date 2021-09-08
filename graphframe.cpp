@@ -3,6 +3,8 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
 
+#include <vector>
+
 
 // public:
 GraphFrame::GraphFrame(QWidget *parent)
@@ -140,7 +142,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
       // add a QGraphicsItem (GraphVertex) to the GraphFrame
       // (QGraphicsScene) container
-//qDebug() << "vertex added:" << v << "type():" << v->type();
+//qDebug() << "vertex added:" << v << "type():" << v->type();   
       addItem(v);
 
       // move rendered vertex from beneath the cursor
@@ -163,8 +165,8 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
       /*LC v1 then LC one of v1's neighbours then (again) LC v1 then
        * gf_deleteVertex(v1)
       */
-//lcv->setSelected(false);
 
+//lcv->setSelected(false);
       // reset CURSOR state
       cursorState(false);
       clabel->clear();
@@ -198,7 +200,6 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
       // 'DRY': pass to general vertex delete function
       gf_deleteVertex(lcv);
-
 //lcv->setSelected(false);
 */
       // reset CURSOR state
@@ -416,7 +417,7 @@ void GraphFrame::gf_deleteVertex(GraphVertex *v4fs) {
    }
 }
 
-void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
+void GraphFrame::gf_localComplementation(GraphVertex * lcv) {  // open 1
    // LC applied to (focus) vertex X: all vertices of X's neighbourhood not
    // joined by a (Graph)edge to gain an edge and conversely
    // pre-condition: target object is type, GraphVertex
@@ -427,7 +428,7 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
       lcv->removeEdges();
    }
    // LC operation: vertex X has > 1 edge
-   else {
+   else {  // open 2
       // container: neighbour vertices of vertex X
       QVector<GraphVertex *> neighbourvs {};
 
@@ -437,120 +438,166 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
       for (GraphEdge * e : *lcv->lcEdges()) {
          // copy the GraphVertex * in order then to access the address of the
          // underlying object
-         GraphVertex * foraddrofp1v= e->p1v();
+         GraphVertex * addressofp1v= e->p1v();
          // test whether pointed-to-objects are equivalent by comparing their
          // addresses
-         if(foraddrofp1v != lcv)
+         if(addressofp1v != lcv)
             neighbourvs.push_back(e->p1v());
          else
             neighbourvs.push_back(e->p2v());
       }
-      // make a copy of neighbourvs
-      const QVector<GraphVertex *> copy_neighbourvs= neighbourvs;
-
-      // Vector: unique POS-pairs of each (neighbour) vertices
-      QVector<QPair<QPointF, QPointF>> all_unique_vertex_pos {};
-
-      for (GraphVertex * v : qAsConst(neighbourvs)) {
-         QPointF vpos= v->pos();
-         for (GraphVertex * v_copy : copy_neighbourvs) {
-            QPointF vpos_copy= v_copy->pos();
-
-            QPair<QPointF, QPointF> vertexpos {};
-            vertexpos.first= vpos;
-            vertexpos.second= vpos_copy;
-
-            QPair<QPointF, QPointF> flipexc {};
-            flipexc.first= vpos_copy;
-            flipexc.second= vpos;
-
-            // exclude 'auto-pairs' and pos reflections from all_vertex_pos
-            if((vertexpos.first != vertexpos.second)
-                  && !all_unique_vertex_pos.contains(flipexc))
-               all_unique_vertex_pos.push_back(vertexpos);
-         }
-      }
-//qDebug() << "lcv->pos():" << lcv->pos() << " all_unique_vertex_pos:" << all_unique_vertex_pos.mid(0);
+//qDebug() << "vertex X pos():" << lcv->pos() << "neighbourvs:" << neighbourvs.mid(0);
       // Vector: any edges of neighbour vertices for DELETE operation
       QVector<GraphEdge *> d_edges {};
-      // Vector: any neighbouring vertices for (edge) ADD operation
-      QPair<GraphVertex *, GraphVertex *> adde;
+      // Vector: any neighbour vertices for (edge) ADD operation
       QVector<QPair<GraphVertex *, GraphVertex *>> a_vertices {};
 
-      // for each neighbour vertex...
-      for(GraphVertex * p_nvx : qAsConst(neighbourvs)) {
-         // ... identify the edges it shares with other neighbour vertices
+      for (GraphVertex * p_nvx : neighbourvs) {  // open 3
+
+         // assemble edge collection:  DELETE
          for (GraphEdge * e : *p_nvx->lcEdges()) {
-            GraphVertex * p1v= e->p1v();
-            GraphVertex * p2v= e->p2v();
-            // by neighbour vertex, collect any ADD edges or DELETE edges
-            for (QPair<QPointF, QPointF> pospair : all_unique_vertex_pos) {
-               // capture an existing edge between neighbours in d_edges
-               if((pospair.first == p1v->pos() && pospair.second == p2v->pos())
-                     || (pospair.first == p2v->pos()
-                         && pospair.second == p1v->pos())){
-                     if(!d_edges.contains(e))
-                        d_edges.push_back(e);
-               }
-               // derive any edge to a neighbour vertex that does not exist
-               else {
-                  for (GraphVertex * v : qAsConst(neighbourvs)) {
-                     if(v->pos() == pospair.first)
-                        adde.first= v;
-                     else
-                        adde.second= v;
+            // derive the GraphVertex * in order then to access the address of
+            // the underlying object
+            GraphVertex * delp1v= e->p1v();
+            GraphVertex * delp2v= e->p2v();
+
+            // DELETE antecedent 1: (both vertices are neighbours of vertex X)
+            if((neighbourvs.contains(delp1v)
+                && neighbourvs.contains(delp2v))
+                  // ^ DELETE antecedent 2: (neither vertex is vertex X)
+                  && (delp1v != lcv && delp2v != lcv)){
+               // consequent: collect in d_edges any edge which connects two
+               // neighbours of vertex X; do enforce uniqueness of d_edges
+               // elements
+               if(d_edges.isEmpty() || !d_edges.contains(e))
+                  d_edges.push_back(e);
+            }
+         }
+         // assemble edge collection: ADD
+         // deep copy of neighbourvs, note: add_neighbourvs is type std::vector
+         // not QVector
+         std::vector<GraphVertex *> add_neighbourvs {};
+         add_neighbourvs.assign(neighbourvs.begin(), neighbourvs.end());
+
+         // remove the in-focus vertex, p_nvx from add_neighbourvs
+         add_neighbourvs.erase(add_neighbourvs.begin());
+//qDebug() << "add_neighbourvs:" << add_neighbourvs.count();
+         for (GraphVertex * p_other_nvx : qAsConst(add_neighbourvs) ) {  // open 4
+            // iterate over the (Graph)edges connecting to the neighbour vertex
+            // of in-focus vertex, p_nvx
+            for (GraphEdge * e : *p_other_nvx->lcEdges()) {  // open 5
+               GraphVertex * other_v_1= e->p1v();
+               GraphVertex * other_v_2= e->p2v();
+
+               // logic: p_other_nvx must be (vertex) other_v_1 or (vertex)
+               // other_v_2, which means lcv/ADD-vertex must be other_v_2 or
+               // other_v_1; therefore, eliminate lcv to get the target
+               // ADD-vertex
+
+               // select only those edges of mutual neighbour vertices of (LC
+               // vertex), lcv, which are not connections to in-focus vertex,
+               // p_nvx
+               if((p_nvx != other_v_1 && p_nvx != other_v_2)
+                     && (lcv != other_v_1 && lcv != other_v_2)){  // open 6
+                  // having reduced the list of possible target ADD-vertex to
+                  // two, (vertex) other_v_1 and (vertex) other_v_2, eliminate
+                  // the vertex which is not target ADD-vertex
+                  //    state: target ADD-vertex == other_v_1 ?
+                  if(p_other_nvx == other_v_1){
+                     unsigned int counter {0};   // mutable variable
+                     // count the number of p_nvx edges not shared with vertex,
+                     // p_other_nvx
+                     for (GraphEdge * e : *p_nvx->lcEdges()) {
+                        GraphVertex * isp_nvxp1v= e->p1v();
+                        GraphVertex * isp_nvxp2v= e->p2v();
+
+                        if(p_other_nvx != isp_nvxp1v && p_other_nvx != isp_nvxp2v)
+                           counter += 1;
+                     }
+
+                     // fires IFF there is no existing edge connecting p_nvx to
+                     // p_other_nvx and hence, p_other_nvx is target ADD-vertex
+                     if(counter == (unsigned int) p_nvx->lcEdges()->count()){
+                        QPair<GraphVertex *, GraphVertex *> add;
+                        add.first= p_nvx;
+                        add.second= p_other_nvx;
+
+                        // collect add in a_vertices...
+                        if(a_vertices.isEmpty())
+                           a_vertices.push_back(add);
+                        // but do enforce uniqueness of a_vertices elements
+                        else {
+                           QPair<GraphVertex *, GraphVertex *> addflip;
+                           addflip.first= p_other_nvx;
+                           addflip.second= p_nvx;
+
+                           if(a_vertices.contains(add)
+                                 || a_vertices.contains(addflip))
+                              return ;
+                           else
+                              a_vertices.push_back(add);
+                           }
+                        }
                   }
+                  // state: target ADD-vertex == other_v_2 ?
+                  else if(p_other_nvx == other_v_2){
+                     unsigned int counterp {0};
+                     // count the number of p_nvx edges not shared with vertex,
+                     // p_other_nvx
+                     for (GraphEdge * e : *p_nvx->lcEdges()) {
+                        GraphVertex * isp_nvxp1v_p= e->p1v();
+                        GraphVertex * isp_nvxp2v_p= e->p2v();
 
-                  QPair<GraphVertex *, GraphVertex *> flipadde;
-                  flipadde.first= adde.second;
-                  flipadde.second= adde.first;
+                        if(p_other_nvx != isp_nvxp1v_p
+                              && p_other_nvx != isp_nvxp2v_p)
+                           counterp += 1;
+                     }
+                     // fires IFF there is no existing edge connecting p_nvx to
+                     // p_other_nvx and hence, p_other_nvx is target ADD-vertex
+                     if(counterp == (unsigned int) p_nvx->lcEdges()->count()){
+                        QPair<GraphVertex *, GraphVertex *> add;
+                        add.first= p_nvx;
+                        add.second= p_other_nvx;
 
-                  if(a_vertices.contains(flipadde))
-                     ;
-                  else if(!a_vertices.contains(adde))
-                     a_vertices.push_back(adde);
-               }
-            }
-         }
-      }
-      // the 'other vertex' to connect with p_nvx can be ambiguous when
-      // creating an ADD pair: eliminate the possibility of deleting then
-      // adding the same edge
-      if(!d_edges.isEmpty() && !a_vertices.isEmpty()){
-         for (GraphEdge * e : d_edges) {
-            GraphVertex * p1v= e->p1v();
-            GraphVertex * p2v= e->p2v();
+                        // collect add in a_vertices...
+                        if(a_vertices.isEmpty())
+                           a_vertices.push_back(add);
+                        // but do enforce uniqueness of a_vertices elements
+                        else {
+                           QPair<GraphVertex *, GraphVertex *> addflip;
+                           addflip.first= p_other_nvx;
+                           addflip.second= p_nvx;
 
-            for (QPair<GraphVertex *, GraphVertex *> adds : a_vertices) {
-               if((adds.first == p1v && adds.second == p2v)
-                     || (adds.first == p2v && adds.second == p1v))
-                  a_vertices.removeAll(adds);
-            }
-         }
-      }
-//qDebug() << "lcv->pos():" << lcv->pos() << "\nd_edges:" << d_edges.mid(0) << "\na_vertices:" << a_vertices.mid(0) << "\na_vertices.count()" << a_vertices.count();
-      // IFF p_nvx has no connecting edge to another neighbour of vertex X,
-      // add a common edge
-      if(!a_vertices.isEmpty()){
-         for (QPair<GraphVertex *, GraphVertex *> z : a_vertices) {
-            GraphEdge * e= new GraphEdge(z.first, z.second, edgemenu);
-
-            // add the edge to (QVector) 'edges' of vertices p1 and p2
-            z.first->addEdge(e);
-            z.second->addEdge(e);
-
-            // add a QGraphicsLineItem (GraphEdge) to the GraphFrame
-            // (QGraphicsScene) container
-            addItem(e);
-         }
-      }
+                           if(a_vertices.contains(add)
+                                 || a_vertices.contains(addflip))
+                              return ;
+                           else
+                              a_vertices.push_back(add);
+                           }
+                        }
+                  }
+               }  // close 6
+            }  // close 5
+         }  // close 4
+      }  // close 3
+//qDebug() << "p_nvx->pos():" << p_nvx->pos() << "a_vertices:" << a_vertices.mid(0);
       // IFF p_nvx has a connecting edge to another neighbour of vertex X,
       // delete the common edge
-      if(!d_edges.isEmpty()){
-         for (GraphEdge * e : d_edges ) {
-            gf_deleteEdge(e);
-         }
+      for (GraphEdge * e : d_edges ) {
+         gf_deleteEdge(e);
       }
-   }
-}
+      // IFF p_nvx has no connecting edge to another neighbour of vertex X,
+      // add a common edge
+      for (QPair<GraphVertex *, GraphVertex *> p : a_vertices) {
+         // instantiate the edge
+         GraphEdge * e= new GraphEdge(p.first, p.second, edgemenu);
+         // add the edge to (QVector) 'edges' of vertices p_nvx and p_other_nvx
+         p.first->addEdge(e);
+         p.second->addEdge(e);
+         // add a QGraphicsLineItem (GraphEdge) to the GraphFrame
+         // (QGraphicsScene) container
+         addItem(e);
+      }
+   }  // close 2
+}  // close 1
 
