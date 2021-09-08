@@ -507,22 +507,28 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
 
                   if(a_vertices.contains(flipadde))
                      ;
-
                   else if(!a_vertices.contains(adde))
                      a_vertices.push_back(adde);
                }
             }
-            if(!a_vertices.isEmpty()){
-               if(e->p1v() == a_vertices.last().first
-                     || e->p1v() == a_vertices.last().second
-                     || e->p2v() == a_vertices.last().first
-                     || e->p2v() == a_vertices.last().second)
-                  a_vertices.pop_back();
+         }
+      }
+      // the 'other vertex' to connect with p_nvx can be ambiguous when
+      // creating an ADD pair: eliminate the possibility of deleting then
+      // adding the same edge
+      if(!d_edges.isEmpty() && !a_vertices.isEmpty()){
+         for (GraphEdge * e : d_edges) {
+            GraphVertex * p1v= e->p1v();
+            GraphVertex * p2v= e->p2v();
+
+            for (QPair<GraphVertex *, GraphVertex *> adds : a_vertices) {
+               if((adds.first == p1v && adds.second == p2v)
+                     || (adds.first == p2v && adds.second == p1v))
+                  a_vertices.removeAll(adds);
             }
          }
       }
-//qDebug() << "lcv->pos():" << lcv->pos() << " d_edges:" << d_edges.mid(0) << " a_vertices:" << a_vertices.mid(0) << "a_vertices.count()" << a_vertices.count()/* << "look12v:" << look12v.mid(0)*/;
-
+//qDebug() << "lcv->pos():" << lcv->pos() << "\nd_edges:" << d_edges.mid(0) << "\na_vertices:" << a_vertices.mid(0) << "\na_vertices.count()" << a_vertices.count();
       // IFF p_nvx has no connecting edge to another neighbour of vertex X,
       // add a common edge
       if(!a_vertices.isEmpty()){
@@ -538,7 +544,6 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
             addItem(e);
          }
       }
-
       // IFF p_nvx has a connecting edge to another neighbour of vertex X,
       // delete the common edge
       if(!d_edges.isEmpty()){
