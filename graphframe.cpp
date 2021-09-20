@@ -421,6 +421,9 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
    // pre-condition: target object is type, GraphVertex
    // post-condition: edges are reconfigured to LC status
 
+   //disallow LC on a vertex with no edges
+   if(lcv->lcEdges()->isEmpty())
+      return ;
    // LC operation: vertex X has one (1) edge
    if(lcv->lcEdges()->count() == 1){
       lcv->removeEdges();
