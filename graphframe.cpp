@@ -3,8 +3,6 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QKeyEvent>
 
-#include <vector>
-
 
 // public:
 GraphFrame::GraphFrame(QWidget *parent)
@@ -421,9 +419,6 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
    // pre-condition: target object is type, GraphVertex
    // post-condition: edges are reconfigured to LC status
 
-   //disallow LC on a vertex with no edges
-   if(lcv->lcEdges()->isEmpty())
-      return ;
    // LC operation: vertex X has one (1) edge
    if(lcv->lcEdges()->count() == 1){
       lcv->removeEdges();
@@ -466,7 +461,8 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
             flipexc.first= v_copy;
             flipexc.second= v;
 
-            // exclude 'auto-pairs' and pos reflections from all_vertex_pos
+            // exclude 'auto-pairs' and pair reflections from
+            // all_unique_vertex_pair
             if((vpos != vpos_copy)
                   && !all_unique_vertex_pairs.contains(flipexc))
                all_unique_vertex_pairs.push_back(unique_vertex_pair);
@@ -485,11 +481,12 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
 
          // ... check for an edge connecting it to its paired neighbour vertex
          if(p_nvx->lcEdges()->count() == 1){
-            // p_nvx is connected by edge to lcv only; recall: vertex_pair is
-            // unique, which proscribes need for a second uniqueness check
+            // p_nvx only has a connecting edge to vertex X; recall: vertex_pair
+            // is unique, which proscribes need for a second uniqueness check
             a_vertices.push_back(vertex_pair);
             add_TF= false;
          }
+         // p_nvx has >1 edge
          else {
             for (GraphEdge * e : *p_nvx->lcEdges()) {
                GraphVertex * p1v= e->p1v();
@@ -526,7 +523,7 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
          }
       }
       // IFF p_nvx has a connecting edge to another neighbour of vertex X,
-      // delete the common edge
+      // DELETE the common edge
       if(!d_edges.isEmpty()){
          for (GraphEdge * e : d_edges ) {
             gf_deleteEdge(e);
