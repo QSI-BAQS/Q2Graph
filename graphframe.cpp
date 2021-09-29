@@ -21,7 +21,7 @@ GraphFrame::~GraphFrame() {}
 // protected:
 void GraphFrame::keyPressEvent(QKeyEvent * event) {
    QVector<int> cursorflags {Qt::Key_E
-            , Qt::Key_0
+            , Qt::Key_O
             , Qt::Key_V
             , Qt::Key_X
             , Qt::Key_Y
@@ -36,8 +36,8 @@ void GraphFrame::keyPressEvent(QKeyEvent * event) {
    case Qt::Key_E:
       setCursorLabel("E");
       break;
-   case Qt::Key_0:
-      setCursorLabel("0");
+   case Qt::Key_O:
+      setCursorLabel("O");
       break;
    case Qt::Key_V:
 //qDebug() << "cursorState():" << *p_cursorFT;
@@ -116,9 +116,31 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
       clabel->hide();
    }
 
-   // operation: identity matrix
-   else if(clabel->text() == "0"){
-      /*functionality placeholder*/
+   // operation: Local Complementation
+   else if(clabel->text() == "O"){
+      // collect the vertex at the cursor hotspot, 'upon click'
+      QList<QGraphicsItem *> lc_vertex= items(event->scenePos()
+                                            , Qt::ContainsItemShape);
+
+      // prevent a runtime exception caused by nothing being at the cursor
+      // hotspot, 'upon click'.  Either operate on a GraphVertex object or,
+      // abort
+      if(lc_vertex.isEmpty() || lc_vertex.first()->type() != GraphVertex::Type)
+         return ;
+
+      // cast a 'QGraphicsItem *' as a 'GraphVertex *' so as to access GraphVertex
+      // members
+      GraphVertex * lcv= qgraphicsitem_cast<GraphVertex *>(lc_vertex.first());
+
+      // vertex X must have >= 1 edge for LC: abort
+      if(lcv->lcEdges()->isEmpty()){
+         cursorState(false);
+         clabel->clear();
+         return ;
+      }
+
+      // 'DRY': pass to general LC function
+      gf_localComplementation(lcv);
 
       // reset CURSOR state
       cursorState(false);
@@ -160,8 +182,29 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
    // operation: X local Pauli measurement
    else if(clabel->text() == "X"){
-      /*LC v1 then LC one of v1's neighbours then (again) LC v1 then
-       * gf_deleteVertex(v1)
+/*      // collect the vertex at the cursor hotspot, 'upon click'
+      QList<QGraphicsItem *> lc_vertex= items(event->scenePos()
+                                            , Qt::ContainsItemShape);
+
+      // prevent a runtime exception caused by nothing being at the cursor
+      // hotspot, 'upon click'.  Either operate on a GraphVertex object or,
+      // abort
+      if(lc_vertex.isEmpty() || lc_vertex.first()->type() != GraphVertex::Type)
+         return ;
+
+      // cast a 'QGraphicsItem *' as a 'GraphVertex *' so as to access GraphVertex
+      // members
+      GraphVertex * lcv= qgraphicsitem_cast<GraphVertex *>(lc_vertex.first());
+
+      // vertex X must have >= 1 edge for LC: abort
+      if(lcv->lcEdges()->isEmpty()){
+         cursorState(false);
+         clabel->clear();
+         return ;
+      }
+
+      // 'DRY': pass to general LC function
+      gf_localComplementation(lcv);
       */
 
 //lcv->setSelected(false);
@@ -188,7 +231,8 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
       // vertex X must have >= 1 edge for LC: abort
       if(lcv->lcEdges()->isEmpty()){
-         lcv->setSelected(false);
+         cursorState(false);
+         clabel->clear();
          return ;
       }
 
@@ -264,6 +308,8 @@ void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) {
          // restore the 'movable' property of p1v, which was suspended at
          // mousePressEvent
          p1v->setFlag(QGraphicsItem::ItemIsMovable, true);
+         // drop focus from the originating (Graph)vertex
+         p1v->setSelected(false);
          // create a pointer to the (Graph)vertex designated as p2
          GraphVertex * p2v= qgraphicsitem_cast<GraphVertex *>(p2items.first());
          // use p1v and p2v as constructors to instantiate the edge
@@ -347,25 +393,7 @@ void GraphFrame::createMenus() {
       // 'DRY': pass to general vertex delete function
       gf_deleteVertex(v4fs);
    });
-   // retain this as a 'what if' function? (to do) Undo function should leave a
-   // right-click LC as a viable option
-   vertexmenu->addAction("Local_Complementation", this, [this](){
-      // collect only the vertex at the cursor hotspot, 'upon click'
-      QList<QGraphicsItem *> lc_vertex= selectedItems();
-      // either operate on a GraphVertex object or, abort
-      if(lc_vertex.isEmpty() || lc_vertex.first()->type() != GraphVertex::Type)
-         return ;
-      // cast a 'QGraphicsItem *' as a 'GraphVertex *' so as to access GraphVertex
-      // members
-      GraphVertex * lcv= qgraphicsitem_cast<GraphVertex *>(lc_vertex.first());
-      // vertex X must have >= 1 edge for LC: abort
-      if(lcv->lcEdges()->isEmpty()){
-         lcv->setSelected(false);
-         return ;
-      }
-      // 'DRY': pass to general LC function
-      gf_localComplementation(lcv); });
-   vertexmenu->addAction("-- place 3 --");
+   vertexmenu->addAction("-- place 2 --");
 }
 
 void GraphFrame::gf_deleteEdge(GraphEdge * e4fs) {
