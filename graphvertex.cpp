@@ -48,8 +48,10 @@ void GraphVertex::removeEdges() {
    }
 }
 
-void GraphVertex::resetColour(const QColor & colour) {
-   vertexcircumferencepen= QPen(colour,2);
+void GraphVertex::resetColour(const QColor & colour, int pen=2
+      , QColor fill= QColor::fromRgb(245,245,245)) {
+   vertexcircumferencepen= QPen(colour, pen);
+   vertexfill= fill;
    //edges.at(X)->resetColour(colour); ???
    update();
 }

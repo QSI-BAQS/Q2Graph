@@ -38,7 +38,7 @@ public:
    void removeEdge(GraphEdge *);
    void removeEdges();
 
-   void resetColour(const QColor &);
+   void resetColour(const QColor &, int, QColor);
    void setVertexID(unsigned int);
 
 protected:
