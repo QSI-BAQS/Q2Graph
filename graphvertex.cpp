@@ -24,14 +24,6 @@ GraphVertex::GraphVertex(QMenu * contextmenu, QGraphicsItem * parent)
 GraphVertex::~GraphVertex() {}
 
 
-void GraphVertex::addEdge(GraphEdge * edge) {
-   edges.push_back(edge);
-};
-
-void GraphVertex::removeEdge(GraphEdge * edge) {
-   edges.removeAll(edge);
-};
-
 void GraphVertex::removeEdges() {
    // deleting (dynamic) objects then deallocating memory do not mix: recall,
    // removeEdge() will execute against the (master) 'edges' vector
@@ -48,12 +40,12 @@ void GraphVertex::removeEdges() {
    }
 }
 
-void GraphVertex::resetColour(const QColor & colour, int pen=2
+void GraphVertex::resetColour(QColor colour, qreal pen= 2
       , QColor fill= QColor::fromRgb(245,245,245)) {
    vertexcircumferencepen= QPen(colour, pen);
    vertexfill= fill;
    //edges.at(X)->resetColour(colour); ???
-   update();
+   //update();
 }
 
 void GraphVertex::setVertexID(unsigned int vscount) {

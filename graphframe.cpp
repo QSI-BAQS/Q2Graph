@@ -141,6 +141,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
       // 'DRY': pass to general LC function
       gf_localComplementation(lcv);
+      lcv->clearNeighbours();
 
       // reset CURSOR state
       cursorState(false);
@@ -182,7 +183,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
    // operation: X local Pauli measurement
    else if(clabel->text() == "X"){
-/*      // collect the vertex at the cursor hotspot, 'upon click'
+      // collect the vertex at the cursor hotspot, 'upon click'
       QList<QGraphicsItem *> lc_vertex= items(event->scenePos()
                                             , Qt::ContainsItemShape);
 
@@ -205,8 +206,15 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
       // 'DRY': pass to general LC function
       gf_localComplementation(lcv);
-      */
 
+      // colour all neighbouring vertices as a prompt to select the next LC
+      // vertex
+      for (GraphVertex * neighbour : *lcv->lcNeighbours()) {
+         neighbour->resetColour(QColor::fromRgb(0,255,0), 4
+                                , QColor::fromRgb(173,255,47));
+      }
+
+//lcv->clearNeighbours();
 //lcv->setSelected(false);
       // reset CURSOR state
       cursorState(false);
@@ -453,9 +461,6 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
    }
    // LC operation: vertex X has > 1 edge
    else {
-      // container: neighbour vertices of vertex X
-      QVector<GraphVertex *> neighbourvs {};
-
       // capture the neighbour vertices of vertex X (i.e. the vertex 'at the
       // opposite end' of any edge shared with vertex X); note the dereference
       // operation on lcv->lcEdges()
@@ -466,17 +471,17 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
          // test whether pointed-to-objects are equivalent by comparing their
          // addresses
          if(foraddrofp1v != lcv)
-            neighbourvs.push_back(e->p1v());
+            lcv->addNeighbour(e->p1v());
          else
-            neighbourvs.push_back(e->p2v());
+            lcv->addNeighbour(e->p2v());
       }
 
-      // make a copy of neighbourvs
-      const QVector<GraphVertex *> copy_neighbourvs= neighbourvs;
+      // make a copy of lcv.neighbourvs
+      const QVector<GraphVertex *> copy_neighbourvs= *lcv->lcNeighbours();
       // Vector: unique pairs of each (neighbour) vertex
       QVector<QPair<GraphVertex *, GraphVertex *>> all_unique_vertex_pairs {};
 
-      for (GraphVertex * v : qAsConst(neighbourvs)) {
+      for (GraphVertex * v : *lcv->lcNeighbours()) {
          QPointF vpos= v->pos();
          for (GraphVertex * v_copy : copy_neighbourvs) {
             QPointF vpos_copy= v_copy->pos();

@@ -33,12 +33,16 @@ public:
    QRectF boundingRect() const override { return vertexboundaryrect; };
    int type() const override { return Type; }
 
-   void addEdge(GraphEdge *);
+   void addEdge(GraphEdge * edge) {edges.push_back(edge); };
    const QVector<GraphEdge *> * lcEdges() const {return & edges; };
-   void removeEdge(GraphEdge *);
+   void removeEdge(GraphEdge * edge) {edges.removeAll(edge); };
    void removeEdges();
 
-   void resetColour(const QColor &, int, QColor);
+   void addNeighbour(GraphVertex * vertex) {neighbourvs.push_back(vertex); };
+   const QVector<GraphVertex *> * lcNeighbours() const {return & neighbourvs; };
+   void clearNeighbours() {neighbourvs.clear(); };
+
+   void resetColour(QColor, qreal, QColor);
    void setVertexID(unsigned int);
 
 protected:
@@ -51,6 +55,9 @@ private:
    QMenu * contextmenu_v {};
 
    QVector<GraphEdge *> edges;
+
+   // container of neighbour vertices of vertex X
+   QVector<GraphVertex *> neighbourvs;
 
    QRectF vertexboundaryrect {QPointF(0.0,0.0), QSizeF(20.0,20.0)};
    QPen vertexcircumferencepen {Qt::black, 2};
