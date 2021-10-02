@@ -45,7 +45,7 @@ void GraphVertex::resetColour(QColor colour, qreal pen= 2
    vertexcircumferencepen= QPen(colour, pen);
    vertexfill= fill;
    //edges.at(X)->resetColour(colour); ???
-   //update();
+   update();
 }
 
 void GraphVertex::setVertexID(unsigned int vscount) {
