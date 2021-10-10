@@ -42,7 +42,7 @@ public:
    const QVector<GraphVertex *> * lcNeighbours() const {return & neighbourvs; };
    void clearNeighbours() {neighbourvs.clear(); };
 
-   void resetColour(QColor, qreal, QColor);
+   void resetColour(QColor, qreal= 2, QColor= QColor(245,245,245));
    void setVertexID(unsigned int);
 
 protected:

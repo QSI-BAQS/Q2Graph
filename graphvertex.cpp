@@ -18,7 +18,6 @@ GraphVertex::GraphVertex(QMenu * contextmenu, QGraphicsItem * parent)
    setFlag(QGraphicsItem::ItemIsMovable);
    setFlag(QGraphicsItem::ItemIsSelectable);
    setFlag(QGraphicsItem::ItemSendsScenePositionChanges);
-
 }
 
 GraphVertex::~GraphVertex() {}
@@ -40,12 +39,14 @@ void GraphVertex::removeEdges() {
    }
 }
 
-void GraphVertex::resetColour(QColor colour, qreal pen= 2
-      , QColor fill= QColor::fromRgb(245,245,245)) {
+void GraphVertex::resetColour(QColor colour, qreal pen, QColor fill) {
    vertexcircumferencepen= QPen(colour, pen);
    vertexfill= fill;
    //edges.at(X)->resetColour(colour); ???
-   update();
+   setPen(vertexcircumferencepen);
+   setBrush(fill);
+
+   update(boundingRect());
 }
 
 void GraphVertex::setVertexID(unsigned int vscount) {

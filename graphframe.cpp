@@ -125,8 +125,11 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
       // prevent a runtime exception caused by nothing being at the cursor
       // hotspot, 'upon click'.  Either operate on a GraphVertex object or,
       // abort
-      if(lc_vertex.isEmpty() || lc_vertex.first()->type() != GraphVertex::Type)
+      if(lc_vertex.isEmpty() || lc_vertex.first()->type() != GraphVertex::Type){
+         cursorState(false);
+         clabel->clear();
          return ;
+      }
 
       // cast a 'QGraphicsItem *' as a 'GraphVertex *' so as to access GraphVertex
       // members
@@ -181,8 +184,8 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
       clabel->clear();
    }
 
-   // operation: X local Pauli measurement
-   else if(clabel->text() == "X"){
+   // operation: X local Pauli measurement, part 1
+   else if(clabel->text() == "X" && lpmX_mpe2_FT == false){
       // collect the vertex at the cursor hotspot, 'upon click'
       QList<QGraphicsItem *> lc_vertex= items(event->scenePos()
                                             , Qt::ContainsItemShape);
@@ -190,32 +193,98 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
       // prevent a runtime exception caused by nothing being at the cursor
       // hotspot, 'upon click'.  Either operate on a GraphVertex object or,
       // abort
-      if(lc_vertex.isEmpty() || lc_vertex.first()->type() != GraphVertex::Type)
+      if(lc_vertex.isEmpty() || lc_vertex.first()->type() != GraphVertex::Type){
+         cursorState(false);
+         clabel->clear();
          return ;
+      }
 
       // cast a 'QGraphicsItem *' as a 'GraphVertex *' so as to access GraphVertex
       // members
-      GraphVertex * lcv= qgraphicsitem_cast<GraphVertex *>(lc_vertex.first());
+      x_lcv1= qgraphicsitem_cast<GraphVertex *>(lc_vertex.first());
 
       // vertex X must have >= 1 edge for LC: abort
-      if(lcv->lcEdges()->isEmpty()){
+      if(x_lcv1->lcEdges()->isEmpty()){
          cursorState(false);
          clabel->clear();
          return ;
       }
 
       // 'DRY': pass to general LC function
-      gf_localComplementation(lcv);
+      gf_localComplementation(x_lcv1);
 
-      // colour all neighbouring vertices as a prompt to select the next LC
-      // vertex
-      for (GraphVertex * neighbour : *lcv->lcNeighbours()) {
-         neighbour->resetColour(QColor::fromRgb(0,255,0), 4
-                                , QColor::fromRgb(173,255,47));
+      // copy of neighbours for X local Pauli measurement operations
+      QVector<GraphVertex *> xneighbours= *x_lcv1->lcNeighbours();
+
+      // LPM X on two-vertices graph: abort
+      if(xneighbours.count() < 2){
+         x_lcv1->clearNeighbours();
+         x_lcv1= nullptr;
+
+         cursorState(false);
+         clabel->clear();
+         return ;
       }
 
-//lcv->clearNeighbours();
-//lcv->setSelected(false);
+      // colour all neighbouring vertices as a user prompt to select the next
+      // LC vertex
+      for (GraphVertex * neighbour : qAsConst(xneighbours)) {
+         neighbour->resetColour(QColor(0,255,0), 4, QColor(173,255,47));
+      }
+      // flag to enable selecting the (neighbour) vertex
+      lpmX_mpe2_FT= true;
+   }
+
+   // operation: X local Pauli measurement, part 2
+   else if(clabel->text() == "X" && lpmX_mpe2_FT == true){
+      x_lcv1->setSelected(false);
+
+      // collect the vertex at the cursor hotspot, 'upon click'
+      QList<QGraphicsItem *> lc_vertex= items(event->scenePos()
+                                            , Qt::ContainsItemShape);
+
+      // prevent a runtime exception caused by nothing being at the cursor
+      // hotspot, 'upon click'.  Either operate on a GraphVertex object or,
+      // abort
+      if(lc_vertex.isEmpty() || lc_vertex.first()->type() != GraphVertex::Type){
+         // restore all vertices to default colour scheme
+         for (GraphVertex * v : qAsConst(vertices)) {
+            v->resetColour(Qt::black);
+         }
+         lpmX_mpe2_FT= false;
+
+         x_lcv1->clearNeighbours();
+         x_lcv1= nullptr;
+
+         cursorState(false);
+         clabel->clear();
+         return ;
+      }
+
+      // cast a 'QGraphicsItem *' as a 'GraphVertex *' so as to access GraphVertex
+      // members
+      x_lcv2= qgraphicsitem_cast<GraphVertex *>(lc_vertex.first());
+
+      // 'DRY': pass LPM X vertex 2 to general LC function
+      gf_localComplementation(x_lcv2);
+
+      // restore all vertices to default colour scheme
+      for (GraphVertex * v : qAsConst(vertices)) {
+         v->resetColour(Qt::black);
+      }
+
+
+      // 'DRY': pass LPM X vertex 1 to general LC function
+      gf_localComplementation(x_lcv1);
+
+      // 'DRY': pass LPM X vertex 1 to general vertex delete function
+      gf_deleteVertex(x_lcv1);
+
+      // clean up
+      lpmX_mpe2_FT= false;
+      x_lcv1= nullptr;
+      x_lcv2= nullptr;
+
       // reset CURSOR state
       cursorState(false);
       clabel->clear();
@@ -230,8 +299,11 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
       // prevent a runtime exception caused by nothing being at the cursor
       // hotspot, 'upon click'.  Either operate on a GraphVertex object or,
       // abort
-      if(lc_vertex.isEmpty() || lc_vertex.first()->type() != GraphVertex::Type)
+      if(lc_vertex.isEmpty() || lc_vertex.first()->type() != GraphVertex::Type){
+         cursorState(false);
+         clabel->clear();
          return ;
+      }
 
       // cast a 'QGraphicsItem *' as a 'GraphVertex *' so as to access GraphVertex
       // members
@@ -263,8 +335,11 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
       // prevent a runtime exception caused by nothing being at the cursor
       // hotspot, 'upon click'.  Note, by not failing this gate condition,
       // element 'localvs.first()' must be a (Graph)vertex
-      if(localvs.isEmpty() || localvs.first()->type() != GraphVertex::Type)
+      if(localvs.isEmpty() || localvs.first()->type() != GraphVertex::Type){
+         cursorState(false);
+         clabel->clear();
          return ;
+      }
 
       // cast a 'QGraphicsItem *' as a 'GraphVertex *' in order to access
       // GraphVertex members

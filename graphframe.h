@@ -38,7 +38,12 @@ private:
    QMenu * vertexmenu {};
    QGraphicsLineItem * tracer {};
    const bool * p_cursorFT {&ft[0]};
+
    QList<GraphVertex *> vertices {};
+
+   bool lpmX_mpe2_FT {false};
+   GraphVertex * x_lcv1;
+   GraphVertex * x_lcv2;
 
    void cursorState(bool);
    void setCursorLabel(QString);
