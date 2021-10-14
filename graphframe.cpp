@@ -80,6 +80,19 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
    if(event->button() != Qt::LeftButton)
       return ;
 
+   // abort: user has not completed entire LPM X operation in contiguous steps,
+   // (see 'part1 -> operation: X local Pauli measurement', below)
+   if(clabel->text() != "X" && lpmX_mpe2_FT == true){
+      // drop the coloured vertex prompts
+      for (GraphVertex * v : qAsConst(vertices)) {
+         v->resetColour(Qt::black);
+      }
+
+      lpmX_mpe2_FT= false;
+      x_lcv1->clearNeighbours();
+      x_lcv1= 0;
+   }
+
    // operation: instantiate a (Graph)edge
    if(clabel->text() == "E"){
       // collect the p1 vertex at the cursor hotspot, 'upon click'
@@ -184,7 +197,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
       clabel->clear();
    }
 
-   // operation: X local Pauli measurement, part 1
+   // part1 -> operation: X local Pauli measurement
    else if(clabel->text() == "X" && lpmX_mpe2_FT == false){
       // collect the vertex at the cursor hotspot, 'upon click'
       QList<QGraphicsItem *> lc_vertex= items(event->scenePos()
@@ -219,7 +232,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
       // LPM X on two-vertices graph: abort
       if(xneighbours.count() < 2){
          x_lcv1->clearNeighbours();
-         x_lcv1= nullptr;
+         x_lcv1= 0;
 
          cursorState(false);
          clabel->clear();
@@ -235,10 +248,8 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
       lpmX_mpe2_FT= true;
    }
 
-   // operation: X local Pauli measurement, part 2
+   // part2 -> operation: X local Pauli measurement
    else if(clabel->text() == "X" && lpmX_mpe2_FT == true){
-      x_lcv1->setSelected(false);
-
       // collect the vertex at the cursor hotspot, 'upon click'
       QList<QGraphicsItem *> lc_vertex= items(event->scenePos()
                                             , Qt::ContainsItemShape);
@@ -254,7 +265,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          lpmX_mpe2_FT= false;
 
          x_lcv1->clearNeighbours();
-         x_lcv1= nullptr;
+         x_lcv1= 0;
 
          cursorState(false);
          clabel->clear();
@@ -273,7 +284,6 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          v->resetColour(Qt::black);
       }
 
-
       // 'DRY': pass LPM X vertex 1 to general LC function
       gf_localComplementation(x_lcv1);
 
@@ -282,8 +292,9 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
       // clean up
       lpmX_mpe2_FT= false;
-      x_lcv1= nullptr;
-      x_lcv2= nullptr;
+      x_lcv1= 0;
+      x_lcv2->clearNeighbours();
+      x_lcv2= 0;
 
       // reset CURSOR state
       cursorState(false);
