@@ -23,16 +23,15 @@ public:
              , QGraphicsItem * parent= nullptr);
    ~GraphEdge();
 
-   // as with GraphVertex: to establish instance ID
+   // enable use of qgraphicsitem_cast 
    enum { Type= UserType + 4 };
+   int type() const override { return Type; }
 
    void resetColour(const QColor &);
    void resetEdgePosition();
 
    GraphVertex * p1v() const { return p1vertex; }
    GraphVertex * p2v() const { return p2vertex; }
-
-   int type() const override { return Type; }
 
 protected:
    void contextMenuEvent(QGraphicsSceneContextMenuEvent *) override;

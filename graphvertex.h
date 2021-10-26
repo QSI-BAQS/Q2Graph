@@ -26,12 +26,12 @@ public:
    // stackoverflow.com/questions/14010922/qt-undefined-reference-to-vtable
    ~GraphVertex();
 
-   // for establishing instance ID
+   // enable use of qgraphicsitem_cast() 
    enum {Type= UserType + 15};
+   int type() const override { return Type; }
 
    // required by QGraphicsView?
    QRectF boundingRect() const override { return vertexboundaryrect; };
-   int type() const override { return Type; }
 
    void addEdge(GraphEdge * edge) {edges.push_back(edge); };
    const QVector<GraphEdge *> * lcEdges() const {return & edges; };
