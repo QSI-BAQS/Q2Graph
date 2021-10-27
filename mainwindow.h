@@ -1,8 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "graphvertex.h"
-
 #include <QMainWindow>
 
 class GraphFrame;
@@ -22,7 +20,9 @@ public:
 
 private:
    Ui::MainWindow * ui {};
+   QMenu * fileMenu;
    GraphFrame * graphframe {};
 
+   void createMenus();
 };
 #endif // MAINWINDOW_H

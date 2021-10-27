@@ -1,6 +1,4 @@
-#include "graphedge.h"
 #include "graphframe.h"
-//#include "graphvertex.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -14,12 +12,13 @@ MainWindow::MainWindow(QWidget *parent)
 {
    ui->setupUi(this);
 
+   createMenus();
+
    graphframe= new GraphFrame(this);
    ui->graphicsView->setScene(graphframe);
 
    ui->graphicsView->setMouseTracking(true);
-   setWindowTitle("q2graph_GVF_v0.3");
-
+   setWindowTitle("Q2Graph");
 }
 
 MainWindow::~MainWindow()
@@ -27,4 +26,11 @@ MainWindow::~MainWindow()
    delete ui;
 }
 
-
+void MainWindow::createMenus() {
+   fileMenu= menuBar()->addMenu(tr("&File"));
+   fileMenu->addAction(tr("-- &Open --"));
+   fileMenu->addAction(tr("-- &Save --"));
+   fileMenu->addAction(tr("E&xit"), this, [this](){
+      QWidget::close();
+   });
+}

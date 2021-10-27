@@ -459,7 +459,7 @@ void GraphFrame::setCursorLabel(QString tag) {
 
 void GraphFrame::createMenus() {
    edgemenu= new QMenu("edge menu");
-   edgemenu->addAction("Delete", this, [this](){
+   edgemenu->addAction(tr("D&elete"), this, [this](){
       // collect only the edge at the cursor hotspot, 'upon click'
       QList<QGraphicsItem *> del_edge= selectedItems();
       // either first object of del_edge is type GraphEdge or, abort
@@ -475,7 +475,7 @@ void GraphFrame::createMenus() {
    edgemenu->addAction("-- place 2 --");
 
    vertexmenu= new QMenu("vertex menu");
-   vertexmenu->addAction("Delete", this, [this](){
+   vertexmenu->addAction(tr("D&elete"), this, [this](){
       // collect only the vertex at the cursor hotspot, 'upon click'
       QList<QGraphicsItem *> del_vertex= selectedItems();
       // either operate on a GraphVertex object or, abort
