@@ -29,6 +29,7 @@ GraphEdge::GraphEdge(GraphVertex * p1v, GraphVertex * p2v, QMenu * contextmenu
 
 GraphEdge::~GraphEdge() {};
 
+
 void GraphEdge::resetColour(const QColor & colour) {
    edgecolour= QPen(colour, 2);
    update();

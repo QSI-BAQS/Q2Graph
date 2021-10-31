@@ -3,10 +3,10 @@
 #pragma once
 
 #include <QDebug>
-
 #include <QGraphicsEllipseItem>
 #include <QGraphicsSceneContextMenuEvent>
 #include <QGraphicsSceneMouseEvent>
+#include <QJsonObject>
 #include <QMenu>
 #include <QPainter>
 #include <QVector>
@@ -21,17 +21,21 @@ QT_END_NAMESPACE
 class GraphVertex : public QGraphicsEllipseItem
 {
 public:
-   GraphVertex(QMenu *, QGraphicsItem * parent= nullptr);
+//   GraphVertex(QMenu *, QGraphicsItem * parent= nullptr);
+   GraphVertex(QMenu *, QPointF, QGraphicsItem * parent= nullptr);
    // resolve compile error 'undefined reference to XXX vtable', see: https://
    // stackoverflow.com/questions/14010922/qt-undefined-reference-to-vtable
    ~GraphVertex();
 
    // enable use of qgraphicsitem_cast() 
-   enum {Type= UserType + 15};
+   enum {Type= UserType + 3};
    int type() const override { return Type; }
 
+   void read(const QJsonObject &);
+   void write(QJsonObject &) const;
+
    // required by QGraphicsView?
-   QRectF boundingRect() const override { return vertexboundaryrect; };
+   QRectF boundingRect() const override {return vertexboundaryrect; };
 
    void addEdge(GraphEdge * edge) {edges.push_back(edge); };
    const QVector<GraphEdge *> * lcEdges() const {return & edges; };
@@ -58,6 +62,9 @@ private:
 
    // container of neighbour vertices of vertex X
    QVector<GraphVertex *> neighbourvs;
+
+   QPointF vpos {};
+   QVector<QPair<QPointF,QPointF>> writepos;
 
    QRectF vertexboundaryrect {QPointF(0.0,0.0), QSizeF(20.0,20.0)};
    QPen vertexcircumferencepen {Qt::black, 2};

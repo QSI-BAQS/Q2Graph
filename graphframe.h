@@ -7,6 +7,7 @@
 
 #include <QDebug>
 #include <QGraphicsScene>
+#include <QJsonObject>
 #include <QLabel>
 #include <QPointF>
 
@@ -24,6 +25,11 @@ class GraphFrame : public QGraphicsScene
 public:
    explicit GraphFrame(QWidget * parent= nullptr);
    ~GraphFrame();
+
+   bool openGraph();
+   void read(const QJsonObject &);
+   bool saveGraph() const;
+   void write(QJsonObject &) const;
 
 protected:
    void keyPressEvent(QKeyEvent *) override;
@@ -44,6 +50,9 @@ private:
    bool lpmX_mpe2_FT {false};
    GraphVertex * x_lcv1;
    GraphVertex * x_lcv2;
+
+   GraphVertex * writevertex;
+   QVector<QPair<QPointF,QPointF>> opengraph_vertices;
 
    void cursorState(bool);
    void setCursorLabel(QString);

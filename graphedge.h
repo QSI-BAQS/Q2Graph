@@ -24,7 +24,7 @@ public:
    ~GraphEdge();
 
    // enable use of qgraphicsitem_cast 
-   enum { Type= UserType + 4 };
+   enum { Type= UserType + 5 };
    int type() const override { return Type; }
 
    void resetColour(const QColor &);

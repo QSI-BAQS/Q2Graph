@@ -1,6 +1,9 @@
 #include "graphframe.h"
 
+#include <QFile>
 #include <QGraphicsSceneMouseEvent>
+#include <QJsonArray>
+#include <QJsonDocument>
 #include <QKeyEvent>
 
 
@@ -17,6 +20,30 @@ GraphFrame::GraphFrame(QWidget *parent)
 }
 
 GraphFrame::~GraphFrame() {}
+
+// GraphFrame-level read instructions for file loading (format: JSON)
+bool GraphFrame::openGraph() {
+   return true;
+}
+
+// element-level operation for GraphFrame::openGraph
+void GraphFrame::read(const QJsonObject & json) {
+
+}
+
+// GraphFrame-level write instructions for file saving (format: JSON)
+bool GraphFrame::saveGraph() const {
+
+   return true;
+}
+
+// element-level operation for GraphFrame::openGraph
+void GraphFrame::write(QJsonObject & json) const {
+   QJsonObject graphvertexobject;
+   writevertex->write(graphvertexobject);
+   json["load_vertex"]= graphvertexobject;
+}
+
 
 // protected:
 void GraphFrame::keyPressEvent(QKeyEvent * event) {
@@ -168,7 +195,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
    else if(clabel->text() == "V"){
       // instantiate the vertex
       GraphVertex * v;
-      v= new GraphVertex(vertexmenu);
+      v= new GraphVertex(vertexmenu, event->scenePos());
 
       // collect the (GraphVertex *) vertex
       vertices.push_back(v);
@@ -427,6 +454,8 @@ void GraphFrame::mouseReleaseEvent(QGraphicsSceneMouseEvent * event) {
    QGraphicsScene::mouseReleaseEvent(event);
 }
 
+
+// private:
 void GraphFrame::cursorState(bool setTF) {
    // 'setter' function
    // pre-condition: setTF == true | false
@@ -454,8 +483,6 @@ void GraphFrame::setCursorLabel(QString tag) {
    if(clabel->isHidden())
       clabel->show();
 };
-
-
 
 void GraphFrame::createMenus() {
    edgemenu= new QMenu("edge menu");
