@@ -7,10 +7,9 @@
 
 
 // public:
-GraphVertex::GraphVertex(QMenu * contextmenu, QPointF pos, unsigned int vid
-      , QGraphicsItem * parent)
-   : QGraphicsEllipseItem(parent), contextmenu_v(contextmenu), vpos(pos)
-   , vertexid(vid)
+GraphVertex::GraphVertex(QMenu * contextmenu, unsigned int vid
+                         , QGraphicsItem * parent)
+   : QGraphicsEllipseItem(parent), contextmenu_v(contextmenu), vertexid(vid)
 {
    // standard vertex: size, fill, circumference pen
    setRect(vertexboundaryrect);
@@ -27,7 +26,8 @@ GraphVertex::~GraphVertex() {}
 
 
 // read instructions for replicating private: <QVector> edges
-void GraphVertex::readEdges(const QJsonArray vpos) {
+void GraphVertex::readEdges(const QJsonObject & json) {
+   QJsonArray edgesarray= json["vedges"].toArray();
    qreal vposx {};
    qreal vposy {};
    QPointF vertexXY {};
@@ -35,13 +35,12 @@ void GraphVertex::readEdges(const QJsonArray vpos) {
 
    bool setsecond= false;
 
-   edges.clear();
-
-   for (int edgeindex= 0; edgeindex < vpos.size(); ++edgeindex) {
+   edgemirror.clear();
+   for (int edgeindex= 0; edgeindex < edgesarray.size(); ++edgeindex){
       if(edgeindex % 2 == 0)
-         vposx= vpos[edgeindex].toDouble();
+         vposx= edgesarray[edgeindex].toDouble();
       else
-         vposy= vpos[edgeindex].toDouble();
+         vposy= edgesarray[edgeindex].toDouble();
 
       if(vposy){
          vertexXY.setX(vposx);
@@ -54,7 +53,7 @@ void GraphVertex::readEdges(const QJsonArray vpos) {
          else {
             readedge.second= vertexXY;
             setsecond= false;
-            //readpos.push_back(readedge);
+            edgemirror.push_back(readedge);
          }
          vposx= 0;
          vposy= 0;
@@ -67,8 +66,8 @@ void GraphVertex::write(QJsonObject & json) const {
    json["vid"]= (double) vertexid;
 
    QJsonArray posxy;
-   posxy.append(vpos.x());
-   posxy.append(vpos.y());
+   posxy.append(this->pos().x());
+   posxy.append(this->pos().y());
    json["vpos"]= posxy;
 
    //QVector<GraphEdge *> edges
@@ -125,7 +124,6 @@ QVariant GraphVertex::itemChange(GraphicsItemChange change, const QVariant & val
    if(change == QGraphicsItem::ItemPositionChange) {
       for(GraphEdge * edge : qAsConst(edges))
          edge->resetEdgePosition();
-      vpos= value.toPointF();
    }
 
    return value;

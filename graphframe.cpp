@@ -45,22 +45,17 @@ void GraphFrame::openGraph(QString rfile) {
       // add the vertex to the GraphFrame
       addItem(loadvertex);
    }
-
+/*
    // loop 2: replicate edges
-   for (int i= 0; i < vertexarray.size(); ++i) {
-         //   if(json.contains("vedges") && json["vedges"].isArray())
-         //      QJsonArray stagingedges= json["vedges"].toArray();
-   }
+   for (GraphVertex * v : qAsConst(vertices)) {
 
+   }*/
 }
 
 // GraphVertex-level operation for GraphFrame::openGraph
 GraphVertex * GraphFrame::read(const QJsonObject & json) {
    unsigned int vid {};
    QPointF vpos {};
-
-   if(json.contains("vid") && json["vid"].isDouble())
-      vid= json["vid"].toInt();
 
    if(json.contains("vid") && json["vid"].isDouble())
       vid= json["vid"].toInt();
@@ -75,7 +70,12 @@ GraphVertex * GraphFrame::read(const QJsonObject & json) {
 
    // instantiate new GraphVertex
    GraphVertex * v;
-   v= new GraphVertex(vertexmenu, vpos, vid);
+   v= new GraphVertex(vertexmenu, vid);
+   // set vertex position
+   v->setPos(vpos);
+   // build (GraphVertex) edgemirror
+   if(json.contains("vedges") && json["vedges"].isArray())
+      v->readEdges(json);
 
    return v;
 }
@@ -246,7 +246,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
    else if(clabel->text() == "V"){
       // instantiate the vertex
       GraphVertex * v;
-      v= new GraphVertex(vertexmenu, event->scenePos());
+      v= new GraphVertex(vertexmenu);
 
       // collect the (GraphVertex *) vertex
       vertices.push_back(v);
