@@ -2,6 +2,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QFileDialog>
 #include <QtWidgets>
 
 
@@ -26,10 +27,28 @@ MainWindow::~MainWindow()
    delete ui;
 }
 
+
+// public:
+void MainWindow::openGraphDialog() {
+   QString graphopenfile= QFileDialog::getOpenFileName(this, tr("Open File"));
+   graphframe->openGraph(graphopenfile);
+}
+
+void MainWindow::saveGraphDialog() {
+   QString graphsavefile= QFileDialog::getSaveFileName(this, tr("Save File"));
+   graphframe->saveGraph(graphsavefile);
+}
+
+
+// private:
 void MainWindow::createMenus() {
    fileMenu= menuBar()->addMenu(tr("&File"));
-   fileMenu->addAction(tr("-- &Open --"));
-   fileMenu->addAction(tr("-- &Save --"));
+   fileMenu->addAction(tr("&Open"), this, [this](){
+      openGraphDialog();
+   });
+   fileMenu->addAction(tr("&Save"), this, [this](){
+      saveGraphDialog();
+   });
    fileMenu->addAction(tr("E&xit"), this, [this](){
       QWidget::close();
    });

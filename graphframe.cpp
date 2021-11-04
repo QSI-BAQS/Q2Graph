@@ -1,4 +1,5 @@
 #include "graphframe.h"
+#include "mainwindow.h"
 
 #include <QFile>
 #include <QGraphicsSceneMouseEvent>
@@ -21,27 +22,77 @@ GraphFrame::GraphFrame(QWidget *parent)
 
 GraphFrame::~GraphFrame() {}
 
+
 // GraphFrame-level read instructions for file loading (format: JSON)
-bool GraphFrame::openGraph() {
-   return true;
+void GraphFrame::openGraph(QString rfile) {
+   QFile loadfile(rfile);
+   if(!loadfile.open(QIODevice::ReadOnly))
+      return ;
+
+   QByteArray jsondata= loadfile.readAll();
+
+   QJsonArray vertexarray= QJsonDocument::fromJson(jsondata).array();
+
+   // loop 1: replicate vertices
+   vertices.clear();
+   for (int i= 0; i < vertexarray.size(); ++i) {
+      QJsonObject vertex= vertexarray[i].toObject();
+
+      GraphVertex * loadvertex= read(vertex);
+
+      // collect the (GraphVertex *) vertex
+      vertices.push_back(loadvertex);
+      // add the vertex to the GraphFrame
+      addItem(loadvertex);
+   }
+
+   // loop 2: replicate edges
+   for (int i= 0; i < vertexarray.size(); ++i) {
+         //   if(json.contains("vedges") && json["vedges"].isArray())
+         //      QJsonArray stagingedges= json["vedges"].toArray();
+   }
+
 }
 
-// element-level operation for GraphFrame::openGraph
-void GraphFrame::read(const QJsonObject & json) {
+// GraphVertex-level operation for GraphFrame::openGraph
+GraphVertex * GraphFrame::read(const QJsonObject & json) {
+   unsigned int vid {};
+   QPointF vpos {};
 
+   if(json.contains("vid") && json["vid"].isDouble())
+      vid= json["vid"].toInt();
+
+   if(json.contains("vid") && json["vid"].isDouble())
+      vid= json["vid"].toInt();
+
+   if(json.contains("vpos") && json["vpos"].isArray()){
+      QJsonArray vertexposxy= json["vpos"].toArray();
+
+      qreal vposx= vertexposxy[0].toDouble();
+      qreal vposy= vertexposxy[1].toDouble();
+      vpos= QPointF(vposx, vposy);
+   }
+
+   // instantiate new GraphVertex
+   GraphVertex * v;
+   v= new GraphVertex(vertexmenu, vpos, vid);
+
+   return v;
 }
 
 // GraphFrame-level write instructions for file saving (format: JSON)
-bool GraphFrame::saveGraph() const {
+void GraphFrame::saveGraph(QString wfile) const {
+   QFile savefile(wfile);
+   if(!savefile.open(QIODevice::WriteOnly))
+      return ;
 
-   return true;
-}
-
-// element-level operation for GraphFrame::openGraph
-void GraphFrame::write(QJsonObject & json) const {
-   QJsonObject graphvertexobject;
-   writevertex->write(graphvertexobject);
-   json["load_vertex"]= graphvertexobject;
+   QJsonArray loadvertices;
+   for (GraphVertex * v : vertices) {
+      QJsonObject graphvertexobject;
+      v->write(graphvertexobject);
+      loadvertices.append(graphvertexobject);
+   }
+   savefile.write(QJsonDocument(loadvertices).toJson());
 }
 
 

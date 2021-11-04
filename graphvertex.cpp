@@ -7,8 +7,10 @@
 
 
 // public:
-GraphVertex::GraphVertex(QMenu * contextmenu, QPointF readpos, QGraphicsItem * parent)
-   : QGraphicsEllipseItem(parent), contextmenu_v(contextmenu), vpos(readpos)
+GraphVertex::GraphVertex(QMenu * contextmenu, QPointF pos, unsigned int vid
+      , QGraphicsItem * parent)
+   : QGraphicsEllipseItem(parent), contextmenu_v(contextmenu), vpos(pos)
+   , vertexid(vid)
 {
    // standard vertex: size, fill, circumference pen
    setRect(vertexboundaryrect);
@@ -24,49 +26,38 @@ GraphVertex::GraphVertex(QMenu * contextmenu, QPointF readpos, QGraphicsItem * p
 GraphVertex::~GraphVertex() {}
 
 
-// GraphVertex-level read instructions for file loading (format: JSON)
-void GraphVertex::read(const QJsonObject & json) {
-   if(json.contains("vid") && json["vid"].isDouble())
-      vertexid= (unsigned int) json["vid"].toInt();
+// read instructions for replicating private: <QVector> edges
+void GraphVertex::readEdges(const QJsonArray vpos) {
+   qreal vposx {};
+   qreal vposy {};
+   QPointF vertexXY {};
+   QPair<QPointF,QPointF> readedge;
 
-   if(json.contains("vpos") && json["vpos"].isArray()){
-      qreal vposx= json["vpos"][0].toDouble();
-      qreal vposy= json["vpos"][1].toDouble();
-      vpos= QPointF(vposx, vposy);
-   }
+   bool setsecond= false;
 
-   if(json.contains("vedges") && json["vedges"].isArray()){
-      QJsonArray stagingedges= json["vedges"].toArray();
-//      edges.clear();   // remove this; move -> GraphFrame::read()
-      qreal vposx {};
-      qreal vposy {};
-      QPointF vertexXY {};
-      QPair<QPointF,QPointF> writeedge;
+   edges.clear();
 
-      bool setsecond= false;
+   for (int edgeindex= 0; edgeindex < vpos.size(); ++edgeindex) {
+      if(edgeindex % 2 == 0)
+         vposx= vpos[edgeindex].toDouble();
+      else
+         vposy= vpos[edgeindex].toDouble();
 
-      for (int edgeindex= 0; edgeindex < stagingedges.size(); ++edgeindex) {
-         if(edgeindex % 2 == 0)
-            vposx= stagingedges[edgeindex].toDouble();
-         else
-            vposy= stagingedges[edgeindex].toDouble();
+      if(vposy){
+         vertexXY.setX(vposx);
+         vertexXY.setY(vposy);
 
-         if(vposy){
-            vertexXY.setX(vposx);
-            vertexXY.setY(vposy);
-
-            if(!setsecond){
-               writeedge.first= vertexXY;
-               setsecond= true;
-            }
-            else {
-               writeedge.second= vertexXY;
-               setsecond= false;
-               writepos.push_back(writeedge);
-            }
-            vposx= 0;
-            vposy= 0;
+         if(!setsecond){
+            readedge.first= vertexXY;
+            setsecond= true;
          }
+         else {
+            readedge.second= vertexXY;
+            setsecond= false;
+            //readpos.push_back(readedge);
+         }
+         vposx= 0;
+         vposy= 0;
       }
    }
 }

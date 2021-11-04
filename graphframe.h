@@ -26,10 +26,10 @@ public:
    explicit GraphFrame(QWidget * parent= nullptr);
    ~GraphFrame();
 
-   bool openGraph();
-   void read(const QJsonObject &);
-   bool saveGraph() const;
-   void write(QJsonObject &) const;
+   void openGraph(QString);
+   GraphVertex * read(const QJsonObject &);
+   void saveGraph(QString) const;
+//   void write(QJsonObject &) const;
 
 protected:
    void keyPressEvent(QKeyEvent *) override;

@@ -21,8 +21,7 @@ QT_END_NAMESPACE
 class GraphVertex : public QGraphicsEllipseItem
 {
 public:
-//   GraphVertex(QMenu *, QGraphicsItem * parent= nullptr);
-   GraphVertex(QMenu *, QPointF, QGraphicsItem * parent= nullptr);
+   GraphVertex(QMenu *, QPointF, unsigned int vid= 0, QGraphicsItem * parent= nullptr);
    // resolve compile error 'undefined reference to XXX vtable', see: https://
    // stackoverflow.com/questions/14010922/qt-undefined-reference-to-vtable
    ~GraphVertex();
@@ -31,7 +30,7 @@ public:
    enum {Type= UserType + 3};
    int type() const override { return Type; }
 
-   void read(const QJsonObject &);
+   void readEdges(const QJsonArray);
    void write(QJsonObject &) const;
 
    // required by QGraphicsView?
@@ -64,7 +63,6 @@ private:
    QVector<GraphVertex *> neighbourvs;
 
    QPointF vpos {};
-   QVector<QPair<QPointF,QPointF>> writepos;
 
    QRectF vertexboundaryrect {QPointF(0.0,0.0), QSizeF(20.0,20.0)};
    QPen vertexcircumferencepen {Qt::black, 2};
