@@ -33,7 +33,7 @@ void GraphFrame::openGraph(QString rfile) {
 
    QJsonArray vertexarray= QJsonDocument::fromJson(jsondata).array();
 
-   // loop 1: replicate vertices
+   // 1. replicate vertices
    vertices.clear();
    for (int i= 0; i < vertexarray.size(); ++i) {
       QJsonObject vertex= vertexarray[i].toObject();
@@ -45,11 +45,51 @@ void GraphFrame::openGraph(QString rfile) {
       // add the vertex to the GraphFrame
       addItem(loadvertex);
    }
-/*
-   // loop 2: replicate edges
-   for (GraphVertex * v : qAsConst(vertices)) {
 
-   }*/
+   // 2. replicate edges
+   QMap<double, GraphVertex*> vertexmap {};
+   for (GraphVertex * v : qAsConst(vertices)) {
+      double kmangle= v->pos().x() + v->pos().y();
+      vertexmap[kmangle]= v;
+   }
+   QVector<QPair<QPointF,QPointF>> edgecheck {};
+
+   for (GraphVertex * v : qAsConst(vertices)) {
+      GraphVertex * p1v {};
+      GraphVertex * p2v {};
+
+      for (QPair<QPointF,QPointF> pospair : qAsConst(v->edgemirror)) {
+
+         // recreate GraphEdge once
+         QPair<QPointF,QPointF> flip= QPair(pospair.second, pospair.first);
+         if(edgecheck.contains(pospair) || edgecheck.contains(flip))
+            continue;
+
+         if(pospair.first == v->pos()){
+            p1v= v;
+            double sndmangle= pospair.second.x() + pospair.second.y();
+            p2v= vertexmap[sndmangle];
+         }
+         else {
+            double fstmangle= pospair.first.x() + pospair.first.y();
+            p1v= vertexmap[fstmangle];
+            p2v= v;
+         }
+
+         GraphEdge * e= new GraphEdge(p1v, p2v, edgemenu);
+
+         // add the edge to (QVector) 'edges' of vertices p1 and p2
+         p1v->addEdge(e);
+         p2v->addEdge(e);
+
+         edgecheck.push_back(pospair);
+
+         // add GraphEdge to the GraphFrame container
+         addItem(e);
+         p1v= 0;
+         p2v= 0;
+      }
+   }
 }
 
 // GraphVertex-level operation for GraphFrame::openGraph
