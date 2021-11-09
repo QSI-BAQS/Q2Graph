@@ -577,7 +577,7 @@ void GraphFrame::setCursorLabel(QString tag) {
 
 void GraphFrame::createMenus() {
    edgemenu= new QMenu("edge menu");
-   edgemenu->addAction(tr("D&elete"), this, [this](){
+   edgemenu->addAction(tr("&Delete"), this, [this](){
       // collect only the edge at the cursor hotspot, 'upon click'
       QList<QGraphicsItem *> del_edge= selectedItems();
       // either first object of del_edge is type GraphEdge or, abort
@@ -590,10 +590,10 @@ void GraphFrame::createMenus() {
       // 'DRY': pass to general edge delete function
       gf_deleteEdge(e4fs);
    });
-   edgemenu->addAction("-- place 2 --");
+//   edgemenu->addAction("-- place 2 --");
 
    vertexmenu= new QMenu("vertex menu");
-   vertexmenu->addAction(tr("D&elete"), this, [this](){
+   vertexmenu->addAction(tr("&Delete"), this, [this](){
       // collect only the vertex at the cursor hotspot, 'upon click'
       QList<QGraphicsItem *> del_vertex= selectedItems();
       // either operate on a GraphVertex object or, abort
@@ -605,7 +605,7 @@ void GraphFrame::createMenus() {
       // 'DRY': pass to general vertex delete function
       gf_deleteVertex(v4fs);
    });
-   vertexmenu->addAction("-- place 2 --");
+//   vertexmenu->addAction("-- place 2 --");
 }
 
 void GraphFrame::gf_deleteEdge(GraphEdge * e4fs) {
