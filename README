@@ -1,0 +1,62 @@
+Q2Graph is a simple canvas for modelling and manipulating of generalised quantum
+graph states.
+
+Q2Graph is a Qt5 Graphics View architecture.
+
+The Q2Graph user may add, move or change a node ('vertex') or the connector
+('edge') that joins the node to other nodes, using a small set of keystrokes and
+mouse clicks.
+
+Opening the Q2Graph application will reveal a white canvas space within grey 
+borders; a limited dropdown menu bar is also visible.  All graph operations are
+restricted to the canvas space.
+
+
+graph operations:
+   The following keystrokes will determine the outcome of the subsequent mouse
+   click(s).  
+   The keystroke letter appears as a label that will track your cursor.
+   Note, if the letter is still visible, you have not completed the requested
+   operation.
+
+   e - Edge, is a two mouse-clicks operation.
+      first, left-click on your choice of origin vertex then, left-click on your
+      choice of target vertex.
+      A limited context menu is available by right-clicking on an edge.
+
+   o - Local Complementation (LC), left-click on your choice of target vertex to
+      LC the neighbouring vertices of the target vertex.
+
+   v - Vertex, left-click to place a new vertex at any position within the 
+      canvas.
+      You may drag-and-drop a vertex.
+      A limited context menu is available by right-clicking on a vertex.
+
+   local Pauli measurements (LPM):
+   x - is a two mouse-clicks operation.
+      The first left-click on a vertex sets it as target vertex 1 and LCs the 
+      neighbouring vertices.
+
+      Those vertices eligible to be set as target vertex 2 will change colour 
+      to green.
+
+      The second left-click on one of the green vertices sets it as target
+      vertex 2; the following actions will then execute: 
+         - LC the neighbouring vertices of vertex 2, then
+	 - a second LC on the neighbouring vertices of vertex 1, and
+	 - a Z-LPM on vertex 1. 
+
+   y - left-click on a vertex to set it as the target and LC the neighbouring
+      vertices; a Z-LPM on the target vertex completes the operation.
+
+   z - left-click on a vertex to delete it and its connected edges. 
+
+
+Save and load graphs:
+   A graph may be saved to or loaded from file.
+
+   A file must be saved in .json format.
+
+   Q2Graph does not read .txt files (yet!).
+
+
