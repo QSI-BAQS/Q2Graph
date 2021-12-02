@@ -412,7 +412,6 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
       // clean up
       lpmX_mpe2_FT= false;
-      x_lcv1->clearNeighbours();
       x_lcv1= 0;
       x_lcv2->clearNeighbours();
       x_lcv2= 0;
@@ -685,7 +684,6 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
 
       // make a copy of lcv.neighbourvs
       const QVector<GraphVertex *> copy_neighbourvs= *lcv->lcNeighbours();
-      qDebug() << "neighbours:" << copy_neighbourvs.count();
       // Vector: unique pairs of each (neighbour) vertex
       QVector<QPair<GraphVertex *, GraphVertex *>> all_unique_vertex_pairs {};
 
