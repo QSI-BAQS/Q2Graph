@@ -381,7 +381,6 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
             v->resetColour(Qt::black);
          }
          lpmX_mpe2_FT= false;
-
          x_lcv1->clearNeighbours();
          x_lcv1= 0;
 
@@ -402,6 +401,9 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          v->resetColour(Qt::black);
       }
 
+      // prevent carrying neighbours from part1 -> operation: X local Pauli
+      //    measurement
+      x_lcv1->clearNeighbours();
       // 'DRY': pass LPM X vertex 1 to general LC function
       gf_localComplementation(x_lcv1);
 
@@ -410,6 +412,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
       // clean up
       lpmX_mpe2_FT= false;
+      x_lcv1->clearNeighbours();
       x_lcv1= 0;
       x_lcv2->clearNeighbours();
       x_lcv2= 0;
@@ -624,7 +627,7 @@ void GraphFrame::gf_deleteEdge(GraphEdge * e4fs) {
    delete e4fs;
 }
 
-void GraphFrame::gf_deleteVertex(GraphVertex *v4fs) {
+void GraphFrame::gf_deleteVertex(GraphVertex * v4fs) {
    // delete a (Graph)vertex and its connected (Graph)edges
    // pre-condition: target object is type, GraphVertex
    // post-condition: target (Graph)vertex and all associated (Graph)edges are
@@ -682,6 +685,7 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
 
       // make a copy of lcv.neighbourvs
       const QVector<GraphVertex *> copy_neighbourvs= *lcv->lcNeighbours();
+      qDebug() << "neighbours:" << copy_neighbourvs.count();
       // Vector: unique pairs of each (neighbour) vertex
       QVector<QPair<GraphVertex *, GraphVertex *>> all_unique_vertex_pairs {};
 
