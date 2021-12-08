@@ -3,9 +3,9 @@ graph states.
 
 Q2Graph is a Qt5 Graphics View architecture.
 
-The Q2Graph user may add, move or change a node ('vertex') or the connector
-('edge') that joins the node to other nodes, using a small set of keystrokes and
-mouse clicks.
+The Q2Graph user may add, move or change a node ('vertex') or add/remove an
+interaction ('edge') between the node and another node, using a small set of
+keystrokes and mouse clicks.
 
 Opening the Q2Graph application will reveal a white canvas space within grey 
 borders; a limited dropdown menu bar is also visible.  All graph operations are
@@ -20,8 +20,8 @@ graph operations:
    operation.
 
    e - Edge, is a two mouse-clicks operation.
-      first, left-click on your choice of origin vertex then, left-click on your
-      choice of target vertex.
+      first, left-click on your choice of first vertex then, left-click on your
+      choice of second vertex.
       A limited context menu is available by right-clicking on an edge.
 
    o - Local Complementation (LC), left-click on your choice of target vertex to
@@ -29,7 +29,8 @@ graph operations:
 
    v - Vertex, left-click to place a new vertex at any position within the 
       canvas.
-      You may drag-and-drop a vertex.
+      You may drag-and-drop a vertex, which will also resize any associated
+      edges.
       A limited context menu is available by right-clicking on a vertex.
 
    local Pauli measurements (LPM):
@@ -49,7 +50,7 @@ graph operations:
    y - left-click on a vertex to set it as the target and LC the neighbouring
       vertices; a Z-LPM on the target vertex completes the operation.
 
-   z - left-click on a vertex to delete it and its connected edges. 
+   z - left-click on a vertex to delete it and its edges. 
 
 
 Save and load graphs:
