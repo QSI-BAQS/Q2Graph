@@ -1,5 +1,5 @@
-#include "graphframe.h"
-#include "mainwindow.h"
+#include "graphframe.hpp"
+#include "mainwindow.hpp"
 
 #include <QFile>
 #include <QGraphicsSceneMouseEvent>

@@ -1,5 +1,5 @@
-#include "graphedge.h"
-#include "graphvertex.h"
+#include "graphedge.hpp"
+#include "graphvertex.hpp"
 // enables *QGraphicsView::scene() const, 'a pointer to the scene currently
 // visualised in the view'
 #include <QGraphicsScene>
