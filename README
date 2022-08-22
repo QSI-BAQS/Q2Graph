@@ -34,18 +34,27 @@ graph operations:
       A limited context menu is available by right-clicking on a vertex.
 
    local Pauli measurements (LPM):
+
+   Specifications of Pauli measurement operations as rendered by Q2Graph derive
+   from:
+
+   Hein, M., Dür, W., Eisert, J., Raußendorf, R., Van den Nest, M. and
+   Briegel, H.J. 2006 Entanglement in Graph States and its Applications. In,
+   Casati, G., Shepelyansky, D.L., Zoller, P. and Benenti, G. 'Quantum
+   Computers, Algorithms and Chaos, Proceedings of the International School of
+   Physics "Enrico Fermi"; course 162', pp. 115-218.  IOS Press, Amsterdam. 
+
    x - is a two mouse-clicks operation.
-      The first left-click on a vertex sets it as target vertex 1 and LCs the 
-      neighbouring vertices.
+      The first left-click on a vertex sets it as target vertex 1.
 
       Those vertices eligible to be set as target vertex 2 will change colour 
       to green.
 
       The second left-click on one of the green vertices sets it as target
-      vertex 2; the following actions will then execute: 
+      vertex 2; in order, the following actions will execute: 
          - LC the neighbouring vertices of vertex 2, then
-	 - a second LC on the neighbouring vertices of vertex 1, and
-	 - a Z-LPM on vertex 1. 
+	 - a Y-LPM on vertex 1, and
+	 - a second LC on the neighbouring vertices of vertex 2.
 
    y - left-click on a vertex to set it as the target and LC the neighbouring
       vertices; a Z-LPM on the target vertex completes the operation.
