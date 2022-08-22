@@ -341,21 +341,20 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          return ;
       }
 
-      // 'DRY': pass to general LC function
-      gf_localComplementation(x_lcv1);
+      for (GraphEdge * e : *x_lcv1->lcEdges()) {
+         // copy the GraphVertex * in order then to access the address of the
+         // underlying object
+         GraphVertex * foraddrofp1v= e->p1v();
+         // test whether pointed-to-objects are equivalent by comparing their
+         // addresses
+         if(foraddrofp1v != x_lcv1)
+            x_lcv1->addNeighbour(e->p1v());
+         else
+            x_lcv1->addNeighbour(e->p2v());
+      }
 
       // copy of neighbours for X local Pauli measurement operations
       QVector<GraphVertex *> xneighbours= *x_lcv1->lcNeighbours();
-
-      // LPM X on two-vertices graph: abort
-      if(xneighbours.count() < 2){
-         x_lcv1->clearNeighbours();
-         x_lcv1= 0;
-
-         cursorState(false);
-         clabel->clear();
-         return ;
-      }
 
       // colour all neighbouring vertices as a user prompt to select the next
       // LC vertex
@@ -404,11 +403,15 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
       // prevent carrying neighbours from part1 -> operation: X local Pauli
       //    measurement
       x_lcv1->clearNeighbours();
+
+      // effect LPM Y on vertex 1
       // 'DRY': pass LPM X vertex 1 to general LC function
       gf_localComplementation(x_lcv1);
-
       // 'DRY': pass LPM X vertex 1 to general vertex delete function
       gf_deleteVertex(x_lcv1);
+
+// second LC on vertex 2
+
 
       // clean up
       lpmX_mpe2_FT= false;
@@ -442,9 +445,10 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
       // vertex X must have >= 1 edge for LC: abort
       if(lcv->lcEdges()->isEmpty()){
-         cursorState(false);
-         clabel->clear();
-         return ;
+          gf_deleteVertex(lcv);
+          cursorState(false);
+          clabel->clear();
+          return ;
       }
 
       // 'DRY': pass to general LC function
@@ -663,7 +667,8 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
 
    // LC operation: vertex X has one (1) edge
    if(lcv->lcEdges()->count() == 1){
-      lcv->removeEdges();
+      //lcv->removeEdges();
+       return ;
    }
    // LC operation: vertex X has > 1 edge
    else {
