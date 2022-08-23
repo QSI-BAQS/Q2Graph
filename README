@@ -47,8 +47,8 @@ graph operations:
    x - is a two mouse-clicks operation.
       The first left-click on a vertex sets it as target vertex 1.
 
-      Those vertices eligible to be set as target vertex 2 will change colour 
-      to green.
+      Those vertices eligible to be set as the 'special neighbour' of vertex 2
+      will change colour to green.
 
       The second left-click on one of the green vertices sets it as target
       vertex 2; in order, the following actions will execute: 
