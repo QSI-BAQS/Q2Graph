@@ -17,6 +17,7 @@ GraphVertex::GraphVertex(QMenu * contextmenu, unsigned int vid
    setPen(vertexcircumferencepen);
 
    // properties of the vertex
+   setFlag(QGraphicsItem::ItemIsFocusable);
    setFlag(QGraphicsItem::ItemIsMovable);
    setFlag(QGraphicsItem::ItemIsSelectable);
    setFlag(QGraphicsItem::ItemSendsScenePositionChanges);
