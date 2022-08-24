@@ -317,7 +317,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
    // part1 -> operation: X local Pauli measurement
    else if(clabel->text() == "X" && lpmX_mpe2_FT == false){
-      // collect the vertex at the cursor hotspot, 'upon click'
+      // collect vertex 1 at the cursor hotspot, 'upon click'
       QList<QGraphicsItem *> lc_vertex= items(event->scenePos()
                                             , Qt::ContainsItemShape);
 
@@ -330,17 +330,18 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          return ;
       }
 
-      // cast a 'QGraphicsItem *' as a 'GraphVertex *' so as to access GraphVertex
-      // members
+      // cast a 'QGraphicsItem *' as a 'GraphVertex *' (i.e. vertex 1) to
+      // access GraphVertex members
       x_lcv1= qgraphicsitem_cast<GraphVertex *>(lc_vertex.first());
 
-      // vertex X must have >= 1 edge for LC: abort
+      // vertex 1 must have >= 1 edge for LC: abort
       if(x_lcv1->lcEdges()->isEmpty()){
          cursorState(false);
          clabel->clear();
          return ;
       }
 
+      // populate QVector<GraphVertex *> of vertex 1 neighbours
       for (GraphEdge * e : *x_lcv1->lcEdges()) {
          // copy the GraphVertex * in order then to access the address of the
          // underlying object
@@ -353,11 +354,11 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
             x_lcv1->addNeighbour(e->p2v());
       }
 
-      // copy of neighbours for X local Pauli measurement operations
+      // copy of vertex 1 neighbours for X local Pauli measurement operations
       QVector<GraphVertex *> xneighbours= *x_lcv1->lcNeighbours();
 
-      // colour all neighbouring vertices as a user prompt to select the next
-      // LC vertex
+      // colour and reformat each of vertex 1's neighbouring vertices as a user
+      // prompt to select the next LC vertex
       for (GraphVertex * neighbour : qAsConst(xneighbours)) {
          neighbour->resetColour(QColor(0,255,0), 4, QColor(173,255,47));
       }
@@ -367,7 +368,7 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
 
    // part2 -> operation: X local Pauli measurement
    else if(clabel->text() == "X" && lpmX_mpe2_FT == true){
-      // collect the vertex at the cursor hotspot, 'upon click'
+      // collect vertex 2 at the cursor hotspot, 'upon click'
       QList<QGraphicsItem *> lc_vertex= items(event->scenePos()
                                             , Qt::ContainsItemShape);
 
@@ -388,11 +389,11 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          return ;
       }
 
-      // cast a 'QGraphicsItem *' as a 'GraphVertex *' so as to access GraphVertex
-      // members
+      // cast a 'QGraphicsItem *' as a 'GraphVertex *' (i.e. vertex 2) to
+      // access GraphVertex members
       x_lcv2= qgraphicsitem_cast<GraphVertex *>(lc_vertex.first());
 
-      // 'DRY': pass LPM X vertex 2 to general LC function
+      // 'DRY': pass vertex 2 to general LC function
       gf_localComplementation(x_lcv2);
 
       // restore all vertices to default colour scheme
@@ -400,23 +401,26 @@ void GraphFrame::mousePressEvent(QGraphicsSceneMouseEvent * event) {
          v->resetColour(Qt::black);
       }
 
-      // prevent carrying neighbours from part1 -> operation: X local Pauli
-      //    measurement
+      // QVector<GraphVertex *> of vertex 1 neighbours is now out of step with
+      //     the rendered graph: clear it
       x_lcv1->clearNeighbours();
 
-      // effect LPM Y on vertex 1
+      // implement LPM Y on vertex 1
       // 'DRY': pass LPM X vertex 1 to general LC function
       gf_localComplementation(x_lcv1);
       // 'DRY': pass LPM X vertex 1 to general vertex delete function
       gf_deleteVertex(x_lcv1);
 
-// second LC on vertex 2
-
+      // second LC on vertex 2:
+      //    QVector<GraphVertex *> of vertex 2 neighbours is out of step with
+      //    the rendered graph: clear it
+      x_lcv2->clearNeighbours();
+      //    implement LC on vertex 2
+      gf_localComplementation(x_lcv2);
 
       // clean up
       lpmX_mpe2_FT= false;
       x_lcv1= 0;
-      x_lcv2->clearNeighbours();
       x_lcv2= 0;
 
       // reset CURSOR state
@@ -667,7 +671,6 @@ void GraphFrame::gf_localComplementation(GraphVertex * lcv) {
 
    // LC operation: vertex X has one (1) edge
    if(lcv->lcEdges()->count() == 1){
-      //lcv->removeEdges();
        return ;
    }
    // LC operation: vertex X has > 1 edge
